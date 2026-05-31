@@ -1,0 +1,48 @@
+## Visual Studio & .NET Core
+bin/
+obj/
+[Dd]ebug/
+[Dd]ebugPS/
+[Rr]elease/
+[Rr]eleasePS/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bb]in/
+[Ob]j/
+Log/
+Logs/
+
+## Visual Studio Cache and User Settings
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.docstates
+*.sln.docstates
+*.dbmdl
+*.aps
+
+## .NET MAUI & WinUI 3 Specifics
+AppPackages/
+BundleArtifacts/
+_pkginfo.txt
+*.msix
+*.appx
+*.appxbundle
+*.msixbundle
+Generated Files/
+_ReSharper*/
+
+## OS Specific Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## Rider & VS Code
+.idea/
+.vscode/
+*.sln.iml

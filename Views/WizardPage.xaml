@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:FacturaPDF.ViewModels"
+             xmlns:converters="clr-namespace:FacturaPDF.Converters"
+             x:Class="FacturaPDF.Views.WizardPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#0D1117">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StepColorConverter x:Key="Step1ColorConverter" TargetStep="1"/>
+            <converters:StepColorConverter x:Key="Step2ColorConverter" TargetStep="2"/>
+            <converters:StepColorConverter x:Key="Step3ColorConverter" TargetStep="3"/>
+            <converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter"/>
+            <converters:StepGreaterThanOneConverter x:Key="StepGreaterThanOneConverter"/>
+            <converters:StepLessThanThreeConverter x:Key="StepLessThanThreeConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ScrollView VerticalOptions="CenterAndExpand">
+        <VerticalStackLayout Spacing="30" Padding="30" MaximumWidthRequest="550" HorizontalOptions="CenterAndExpand">
+            
+            <!-- Cabecera / Identidad Premium -->
+            <VerticalStackLayout Spacing="5" HorizontalOptions="Center">
+                <Label Text="📄 FacturaPDF" 
+                       FontSize="32" 
+                       FontAttributes="Bold" 
+                       TextColor="#52B788" 
+                       HorizontalOptions="Center"/>
+                <Label Text="Asistente de Configuración Inicial" 
+                       FontSize="16" 
+                       TextColor="#8B949E" 
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Indicador Visual de Pasos (Stepper) -->
+            <Grid ColumnDefinitions="*, *, *" ColumnSpacing="10" HorizontalOptions="FillAndExpand">
+                <!-- Paso 1 -->
+                <Border Grid.Column="0" StrokeThickness="0" BackgroundColor="{Binding CurrentStep, Converter={StaticResource Key=Step1ColorConverter}}" StrokeShape="RoundRectangle 8" Padding="10, 8">
+                    <Label Text="1. Registro" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center" TextColor="White"/>
+                </Border>
+                <!-- Paso 2 -->
+                <Border Grid.Column="1" StrokeThickness="0" BackgroundColor="{Binding CurrentStep, Converter={StaticResource Key=Step2ColorConverter}}" StrokeShape="RoundRectangle 8" Padding="10, 8">
+                    <Label Text="2. Carpetas" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center" TextColor="White"/>
+                </Border>
+                <!-- Paso 3 -->
+                <Border Grid.Column="2" StrokeThickness="0" BackgroundColor="{Binding CurrentStep, Converter={StaticResource Key=Step3ColorConverter}}" StrokeShape="RoundRectangle 8" Padding="10, 8">
+                    <Label Text="3. Confirmar" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center" TextColor="White"/>
+                </Border>
+            </Grid>
+
+            <!-- Título del Paso Activo -->
+            <Label Text="{Binding StepTitle}" 
+                   FontSize="20" 
+                   FontAttributes="Bold" 
+                   TextColor="White" 
+                   HorizontalOptions="Start"/>
+
+            <!-- CONTENEDOR PRINCIPAL DEL PASO ACTIVO (Tarjeta Glassmorphism) -->
+            <Border StrokeThickness="1" 
+                    Stroke="#21262D" 
+                    BackgroundColor="#161B22" 
+                    StrokeShape="RoundRectangle 16" 
+                    Padding="25">
+                
+                <Grid>
+                    <!-- ================= PASO 1: AUTENTICACIÓN ================= -->
+                    <VerticalStackLayout Spacing="15" IsVisible="{Binding IsStep1Visible}">
+                        <Label Text="Introduce tus credenciales de acceso para la aplicación. La contraseña debe tener al menos 6 caracteres." 
+                               TextColor="#8B949E" 
+                               FontSize="13"/>
+                        
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="Correo Electrónico" TextColor="#C9D1D9" FontSize="14" FontAttributes="Bold"/>
+                            <Border StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117">
+                                <Entry Text="{Binding Email}" 
+                                       Placeholder="ejemplo@correo.com" 
+                                       TextColor="White" 
+                                       PlaceholderColor="#484F58" 
+                                       Keyboard="Email" 
+                                       Margin="5,0"/>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="Contraseña del Sistema" TextColor="#C9D1D9" FontSize="14" FontAttributes="Bold"/>
+                            <Border StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117">
+                                <Entry Text="{Binding Password}" 
+                                       Placeholder="••••••••" 
+                                       IsPassword="True" 
+                                       TextColor="White" 
+                                       PlaceholderColor="#484F58" 
+                                       Margin="5,0"/>
+                            </Border>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+
+                    <!-- ================= PASO 2: SELECCIÓN DE RUTAS ================= -->
+                    <VerticalStackLayout Spacing="20" IsVisible="{Binding IsStep2Visible}">
+                        <Label Text="Configura las ubicaciones donde FacturaPDF leerá los XMLs del SAT y donde se guardarán los archivos PDF resultantes." 
+                               TextColor="#8B949E" 
+                               FontSize="13"/>
+
+                        <!-- Carpeta de Entrada -->
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="Carpeta de Entrada (XMLs)" TextColor="#C9D1D9" FontSize="14" FontAttributes="Bold"/>
+                            <Grid ColumnDefinitions="*, Auto" ColumnSpacing="10">
+                                <Border Grid.Column="0" StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="10, 0">
+                                    <Label Text="{Binding SourceFolderPath, TargetNullValue='No seleccionada'}" 
+                                           TextColor="White" 
+                                           VerticalOptions="Center" 
+                                           LineBreakMode="HeadTruncation" 
+                                           FontSize="13"/>
+                                </Border>
+                                <Button Grid.Column="1" 
+                                        Text="Examinar..." 
+                                        Command="{Binding SelectSourceFolderCommand}" 
+                                        BackgroundColor="#21262D" 
+                                        TextColor="White" 
+                                        CornerRadius="8" 
+                                        Padding="15,0"/>
+                            </Grid>
+                        </VerticalStackLayout>
+
+                        <!-- Carpeta de Salida -->
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="Carpeta de Salida (PDFs)" TextColor="#C9D1D9" FontSize="14" FontAttributes="Bold"/>
+                            <Grid ColumnDefinitions="*, Auto" ColumnSpacing="10">
+                                <Border Grid.Column="0" StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="10, 0">
+                                    <Label Text="{Binding OutputFolderPath, TargetNullValue='No seleccionada'}" 
+                                           TextColor="White" 
+                                           VerticalOptions="Center" 
+                                           LineBreakMode="HeadTruncation" 
+                                           FontSize="13"/>
+                                </Border>
+                                <Button Grid.Column="1" 
+                                        Text="Examinar..." 
+                                        Command="{Binding SelectOutputFolderCommand}" 
+                                        BackgroundColor="#21262D" 
+                                        TextColor="White" 
+                                        CornerRadius="8" 
+                                        Padding="15,0"/>
+                            </Grid>
+                        </VerticalStackLayout>
+
+                        <!-- Plantilla XSLT Personalizada (Opcional) -->
+                        <VerticalStackLayout Spacing="5">
+                            <Label Text="Plantilla XSLT 1.0 Personalizada (Opcional)" TextColor="#C9D1D9" FontSize="14" FontAttributes="Bold"/>
+                            <Grid ColumnDefinitions="*, Auto" ColumnSpacing="10">
+                                <Border Grid.Column="0" StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="10, 0">
+                                    <Label Text="{Binding CustomXsltPath, TargetNullValue='Usar integrada (Defecto)'}" 
+                                           TextColor="#8B949E" 
+                                           VerticalOptions="Center" 
+                                           LineBreakMode="HeadTruncation" 
+                                           FontSize="13"/>
+                                </Border>
+                                <Button Grid.Column="1" 
+                                        Text="Examinar..." 
+                                        Command="{Binding SelectXsltFileCommand}" 
+                                        BackgroundColor="#21262D" 
+                                        TextColor="White" 
+                                        CornerRadius="8" 
+                                        Padding="15,0"/>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+
+                    <!-- ================= PASO 3: CONFIRMACIÓN ================= -->
+                    <VerticalStackLayout Spacing="15" IsVisible="{Binding IsStep3Visible}">
+                        <Label Text="¡Todo está listo! Confirma que los datos ingresados sean correctos antes de inicializar la aplicación." 
+                               TextColor="#8B949E" 
+                               FontSize="13"/>
+
+                        <Border StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="15">
+                            <VerticalStackLayout Spacing="10">
+                                <HorizontalStackLayout Spacing="10">
+                                    <Label Text="📧 Correo:" FontAttributes="Bold" TextColor="#52B788" WidthRequest="90"/>
+                                    <Label Text="{Binding Email}" TextColor="White"/>
+                                </HorizontalStackLayout>
+                                
+                                <HorizontalStackLayout Spacing="10">
+                                    <Label Text="📥 Entrada:" FontAttributes="Bold" TextColor="#52B788" WidthRequest="90"/>
+                                    <Label Text="{Binding SourceFolderPath}" TextColor="White" LineBreakMode="CharacterWrap"/>
+                                </HorizontalStackLayout>
+
+                                <HorizontalStackLayout Spacing="10">
+                                    <Label Text="📤 Salida:" FontAttributes="Bold" TextColor="#52B788" WidthRequest="90"/>
+                                    <Label Text="{Binding OutputFolderPath}" TextColor="White" LineBreakMode="CharacterWrap"/>
+                                </HorizontalStackLayout>
+
+                                <HorizontalStackLayout Spacing="10">
+                                    <Label Text="📄 XSLT:" FontAttributes="Bold" TextColor="#52B788" WidthRequest="90"/>
+                                    <Label Text="{Binding CustomXsltPath, TargetNullValue='Por defecto integrada en la app'}" TextColor="#8B949E" LineBreakMode="CharacterWrap"/>
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Label Text="* Al inicializar, la app creará automáticamente las subcarpetas 'Procesados' y 'Errores' dentro del directorio de entrada seleccionado." 
+                               TextColor="#8B949E" 
+                               FontSize="11" 
+                               FontAttributes="Italic"/>
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Mensaje de Error Informativo -->
+            <Label Text="{Binding ErrorMessage}" 
+                   TextColor="#FF4D4D" 
+                   FontSize="13" 
+                   FontAttributes="Bold" 
+                   HorizontalOptions="Center" 
+                   IsVisible="{Binding ErrorMessage, Converter={StaticResource Key=StringNotEmptyConverter}}"/>
+
+            <!-- BOTONES DE NAVEGACIÓN INFERIOR -->
+            <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+                <!-- Botón Atrás -->
+                <Button Grid.Column="0" 
+                        Text="Atrás" 
+                        Command="{Binding PreviousStepCommand}" 
+                        IsVisible="{Binding CurrentStep, Converter={StaticResource Key=StepGreaterThanOneConverter}}" 
+                        BackgroundColor="#21262D" 
+                        TextColor="White" 
+                        CornerRadius="8" 
+                        HeightRequest="45"/>
+                
+                <!-- Botón Siguiente (Pasos 1 y 2) -->
+                <Button Grid.Column="1" 
+                        Text="Siguiente" 
+                        Command="{Binding NextStepCommand}" 
+                        IsVisible="{Binding CurrentStep, Converter={StaticResource Key=StepLessThanThreeConverter}}" 
+                        BackgroundColor="#52B788" 
+                        TextColor="White" 
+                        FontAttributes="Bold" 
+                        CornerRadius="8" 
+                        HeightRequest="45"/>
+
+                <!-- Botón Finalizar (Paso 3) -->
+                <Button Grid.Column="1" 
+                        Text="Inicializar App" 
+                        Command="{Binding FinishConfigurationCommand}" 
+                        IsVisible="{Binding IsStep3Visible}" 
+                        BackgroundColor="#52B788" 
+                        TextColor="White" 
+                        FontAttributes="Bold" 
+                        CornerRadius="8" 
+                        HeightRequest="45"/>
+            </Grid>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
