@@ -173,17 +173,87 @@
 
                     <!-- ================= PASO 3: CONFIGURACIÓN DE PLANTILLAS PDF ================= -->
                     <VerticalStackLayout Spacing="15" IsVisible="{Binding IsStep3Visible}">
-                        <Label Text="Configura una plantilla global única o plantillas personalizadas específicas por tipo de comprobante. Si dejas una ruta vacía, se utilizará la plantilla por defecto." 
+                        <Label Text="Elige el esquema de plantillas que prefieras utilizar en la aplicación. Puedes seleccionar la plantilla estándar o personalizarla." 
                                TextColor="#8B949E" 
                                FontSize="13"/>
 
-                        <!-- Plantilla Global -->
-                        <Label Text="Plantilla Global" TextColor="#52B788" FontSize="15" FontAttributes="Bold" Margin="0, 5, 0, 0"/>
-                        <VerticalStackLayout Spacing="5">
-                            <Label Text="Ruta" TextColor="#C9D1D9" FontSize="13"/>
+                        <!-- Selectores de Modo de Plantilla (Radio Buttons Premium) -->
+                        <VerticalStackLayout Spacing="10" Margin="0, 5, 0, 10">
+                            <!-- Opción 1: Predeterminada -->
+                            <Border StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#161B22" Padding="15, 12">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SetTemplateModeCommand}" CommandParameter="1"/>
+                                </Border.GestureRecognizers>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsTemplateModePredeterminada}" Value="True">
+                                        <Setter Property="Stroke" Value="#52B788"/>
+                                        <Setter Property="BackgroundColor" Value="#1052B788"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsTemplateModePredeterminada}" Color="#52B788" InputTransparent="True" VerticalOptions="Center"/>
+                                    <VerticalStackLayout Grid.Column="1" Margin="10, 0, 0, 0" VerticalOptions="Center">
+                                        <Label Text="Plantilla Estándar / Predeterminada (Recomendado)" TextColor="White" FontSize="13" FontAttributes="Bold"/>
+                                        <Label Text="Usa el formato CFDI integrado (default_cfdi.xslt) diseñado con QR oficial y sellos." TextColor="#8B949E" FontSize="11"/>
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+
+                            <!-- Opción 2: Global -->
+                            <Border StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#161B22" Padding="15, 12">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SetTemplateModeCommand}" CommandParameter="2"/>
+                                </Border.GestureRecognizers>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsTemplateModeGlobal}" Value="True">
+                                        <Setter Property="Stroke" Value="#52B788"/>
+                                        <Setter Property="BackgroundColor" Value="#1052B788"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsTemplateModeGlobal}" Color="#52B788" InputTransparent="True" VerticalOptions="Center"/>
+                                    <VerticalStackLayout Grid.Column="1" Margin="10, 0, 0, 0" VerticalOptions="Center">
+                                        <Label Text="Plantilla Global Única" TextColor="White" FontSize="13" FontAttributes="Bold"/>
+                                        <Label Text="Aplica un archivo XSLT personalizado único para todos tus comprobantes procesados." TextColor="#8B949E" FontSize="11"/>
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+
+                            <!-- Opción 3: Por Comprobante -->
+                            <Border StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#161B22" Padding="15, 12">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SetTemplateModeCommand}" CommandParameter="3"/>
+                                </Border.GestureRecognizers>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsTemplateModeSpecific}" Value="True">
+                                        <Setter Property="Stroke" Value="#52B788"/>
+                                        <Setter Property="BackgroundColor" Value="#1052B788"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsTemplateModeSpecific}" Color="#52B788" InputTransparent="True" VerticalOptions="Center"/>
+                                    <VerticalStackLayout Grid.Column="1" Margin="10, 0, 0, 0" VerticalOptions="Center">
+                                        <Label Text="Plantillas específicas por Tipo de Comprobante" TextColor="White" FontSize="13" FontAttributes="Bold"/>
+                                        <Label Text="Asigna diseños XSLT independientes para ingresos, carta porte, pagos, nómina, etc." TextColor="#8B949E" FontSize="11"/>
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Panel de rutas condicional según el modo activo -->
+
+                        <!-- Modo 1: Predeterminada -->
+                        <Border StrokeThickness="0" BackgroundColor="#1052B788" StrokeShape="RoundRectangle 8" Padding="12" IsVisible="{Binding IsTemplateModePredeterminada}">
+                            <Label Text="ℹ️ Se utilizará la plantilla predeterminada (default_cfdi.xslt) integrada en los recursos de la aplicación para procesar todos los comprobantes." TextColor="#52B788" FontSize="12" LineBreakMode="WordWrap"/>
+                        </Border>
+
+                        <!-- Modo 2: Global -->
+                        <VerticalStackLayout Spacing="5" IsVisible="{Binding IsTemplateModeGlobal}">
+                            <Label Text="Plantilla Global" TextColor="#52B788" FontSize="15" FontAttributes="Bold" Margin="0, 5, 0, 0"/>
+                            <Label Text="Ruta del archivo XSLT" TextColor="#C9D1D9" FontSize="13"/>
                             <Grid ColumnDefinitions="*, Auto" ColumnSpacing="10">
                                 <Border Grid.Column="0" StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="10, 0">
-                                    <Label Text="{Binding CustomXsltPath, TargetNullValue='No seleccionada (Usar integrada por defecto)'}" 
+                                    <Label Text="{Binding CustomXsltPath, TargetNullValue='No seleccionada (Se requiere archivo .xslt)'}" 
                                            TextColor="White" 
                                            VerticalOptions="Center" 
                                            LineBreakMode="HeadTruncation" 
@@ -199,110 +269,110 @@
                             </Grid>
                         </VerticalStackLayout>
 
-                        <Border StrokeThickness="0" HeightRequest="1" BackgroundColor="#21262D" Margin="0, 10"/>
+                        <!-- Modo 3: Por Comprobante -->
+                        <VerticalStackLayout Spacing="15" IsVisible="{Binding IsTemplateModeSpecific}">
+                            <Label Text="Plantillas por comprobante" TextColor="#52B788" FontSize="15" FontAttributes="Bold"/>
 
-                        <!-- Plantillas por Comprobante -->
-                        <Label Text="Plantilla por comprobante" TextColor="#52B788" FontSize="15" FontAttributes="Bold"/>
+                            <!-- Factura Ingreso -->
+                            <Grid ColumnDefinitions="140, *, Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                <Label Grid.Column="0" Text="Factura Ingreso" TextColor="#C9D1D9" FontSize="13" VerticalOptions="Center"/>
+                                <Border Grid.Column="1" StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="10, 0" HeightRequest="38">
+                                    <Label Text="{Binding XsltIngresoPath, TargetNullValue='Usar integrada (Defecto)'}" 
+                                           TextColor="White" 
+                                           VerticalOptions="Center" 
+                                           LineBreakMode="HeadTruncation" 
+                                           FontSize="12"/>
+                                </Border>
+                                <Button Grid.Column="2" 
+                                        Text="BUSCAR" 
+                                        Command="{Binding SelectXsltIngresoCommand}" 
+                                        BackgroundColor="#21262D" 
+                                        TextColor="White" 
+                                        CornerRadius="8" 
+                                        HeightRequest="38"
+                                        Padding="15,0"/>
+                            </Grid>
 
-                        <!-- Factura Ingreso -->
-                        <Grid ColumnDefinitions="140, *, Auto" ColumnSpacing="10" VerticalOptions="Center">
-                            <Label Grid.Column="0" Text="Factura Ingreso" TextColor="#C9D1D9" FontSize="13" VerticalOptions="Center"/>
-                            <Border Grid.Column="1" StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="10, 0" HeightRequest="38">
-                                <Label Text="{Binding XsltIngresoPath, TargetNullValue='Usar global / integrada'}" 
-                                       TextColor="White" 
-                                       VerticalOptions="Center" 
-                                       LineBreakMode="HeadTruncation" 
-                                       FontSize="12"/>
-                            </Border>
-                            <Button Grid.Column="2" 
-                                    Text="BUSCAR" 
-                                    Command="{Binding SelectXsltIngresoCommand}" 
-                                    BackgroundColor="#21262D" 
-                                    TextColor="White" 
-                                    CornerRadius="8" 
-                                    HeightRequest="38"
-                                    Padding="15,0"/>
-                        </Grid>
+                            <!-- Carta Porte -->
+                            <Grid ColumnDefinitions="140, *, Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                <Label Grid.Column="0" Text="Carta Porte" TextColor="#C9D1D9" FontSize="13" VerticalOptions="Center"/>
+                                <Border Grid.Column="1" StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="10, 0" HeightRequest="38">
+                                    <Label Text="{Binding XsltCartaPortePath, TargetNullValue='Usar integrada (Defecto)'}" 
+                                           TextColor="White" 
+                                           VerticalOptions="Center" 
+                                           LineBreakMode="HeadTruncation" 
+                                           FontSize="12"/>
+                                </Border>
+                                <Button Grid.Column="2" 
+                                        Text="BUSCAR" 
+                                        Command="{Binding SelectXsltCartaPorteCommand}" 
+                                        BackgroundColor="#21262D" 
+                                        TextColor="White" 
+                                        CornerRadius="8" 
+                                        HeightRequest="38"
+                                        Padding="15,0"/>
+                            </Grid>
 
-                        <!-- Carta Porte -->
-                        <Grid ColumnDefinitions="140, *, Auto" ColumnSpacing="10" VerticalOptions="Center">
-                            <Label Grid.Column="0" Text="Carta Porte" TextColor="#C9D1D9" FontSize="13" VerticalOptions="Center"/>
-                            <Border Grid.Column="1" StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="10, 0" HeightRequest="38">
-                                <Label Text="{Binding XsltCartaPortePath, TargetNullValue='Usar global / integrada'}" 
-                                       TextColor="White" 
-                                       VerticalOptions="Center" 
-                                       LineBreakMode="HeadTruncation" 
-                                       FontSize="12"/>
-                            </Border>
-                            <Button Grid.Column="2" 
-                                    Text="BUSCAR" 
-                                    Command="{Binding SelectXsltCartaPorteCommand}" 
-                                    BackgroundColor="#21262D" 
-                                    TextColor="White" 
-                                    CornerRadius="8" 
-                                    HeightRequest="38"
-                                    Padding="15,0"/>
-                        </Grid>
+                            <!-- Pagos -->
+                            <Grid ColumnDefinitions="140, *, Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                <Label Grid.Column="0" Text="Pagos" TextColor="#C9D1D9" FontSize="13" VerticalOptions="Center"/>
+                                <Border Grid.Column="1" StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="10, 0" HeightRequest="38">
+                                    <Label Text="{Binding XsltPagoPath, TargetNullValue='Usar integrada (Defecto)'}" 
+                                           TextColor="White" 
+                                           VerticalOptions="Center" 
+                                           LineBreakMode="HeadTruncation" 
+                                           FontSize="12"/>
+                                </Border>
+                                <Button Grid.Column="2" 
+                                        Text="BUSCAR" 
+                                        Command="{Binding SelectXsltPagoCommand}" 
+                                        BackgroundColor="#21262D" 
+                                        TextColor="White" 
+                                        CornerRadius="8" 
+                                        HeightRequest="38"
+                                        Padding="15,0"/>
+                            </Grid>
 
-                        <!-- Pagos -->
-                        <Grid ColumnDefinitions="140, *, Auto" ColumnSpacing="10" VerticalOptions="Center">
-                            <Label Grid.Column="0" Text="Pagos" TextColor="#C9D1D9" FontSize="13" VerticalOptions="Center"/>
-                            <Border Grid.Column="1" StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="10, 0" HeightRequest="38">
-                                <Label Text="{Binding XsltPagoPath, TargetNullValue='Usar global / integrada'}" 
-                                       TextColor="White" 
-                                       VerticalOptions="Center" 
-                                       LineBreakMode="HeadTruncation" 
-                                       FontSize="12"/>
-                            </Border>
-                            <Button Grid.Column="2" 
-                                    Text="BUSCAR" 
-                                    Command="{Binding SelectXsltPagoCommand}" 
-                                    BackgroundColor="#21262D" 
-                                    TextColor="White" 
-                                    CornerRadius="8" 
-                                    HeightRequest="38"
-                                    Padding="15,0"/>
-                        </Grid>
+                            <!-- Nómina -->
+                            <Grid ColumnDefinitions="140, *, Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                <Label Grid.Column="0" Text="Nómina" TextColor="#C9D1D9" FontSize="13" VerticalOptions="Center"/>
+                                <Border Grid.Column="1" StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="10, 0" HeightRequest="38">
+                                    <Label Text="{Binding XsltNominaPath, TargetNullValue='Usar integrada (Defecto)'}" 
+                                           TextColor="White" 
+                                           VerticalOptions="Center" 
+                                           LineBreakMode="HeadTruncation" 
+                                           FontSize="12"/>
+                                </Border>
+                                <Button Grid.Column="2" 
+                                        Text="BUSCAR" 
+                                        Command="{Binding SelectXsltNominaCommand}" 
+                                        BackgroundColor="#21262D" 
+                                        TextColor="White" 
+                                        CornerRadius="8" 
+                                        HeightRequest="38"
+                                        Padding="15,0"/>
+                            </Grid>
 
-                        <!-- Nómina -->
-                        <Grid ColumnDefinitions="140, *, Auto" ColumnSpacing="10" VerticalOptions="Center">
-                            <Label Grid.Column="0" Text="Nómina" TextColor="#C9D1D9" FontSize="13" VerticalOptions="Center"/>
-                            <Border Grid.Column="1" StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="10, 0" HeightRequest="38">
-                                <Label Text="{Binding XsltNominaPath, TargetNullValue='Usar global / integrada'}" 
-                                       TextColor="White" 
-                                       VerticalOptions="Center" 
-                                       LineBreakMode="HeadTruncation" 
-                                       FontSize="12"/>
-                            </Border>
-                            <Button Grid.Column="2" 
-                                    Text="BUSCAR" 
-                                    Command="{Binding SelectXsltNominaCommand}" 
-                                    BackgroundColor="#21262D" 
-                                    TextColor="White" 
-                                    CornerRadius="8" 
-                                    HeightRequest="38"
-                                    Padding="15,0"/>
-                        </Grid>
-
-                        <!-- Comercio Exterior -->
-                        <Grid ColumnDefinitions="140, *, Auto" ColumnSpacing="10" VerticalOptions="Center">
-                            <Label Grid.Column="0" Text="Comercio Exterior" TextColor="#C9D1D9" FontSize="13" VerticalOptions="Center"/>
-                            <Border Grid.Column="1" StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="10, 0" HeightRequest="38">
-                                <Label Text="{Binding XsltComercioExteriorPath, TargetNullValue='Usar global / integrada'}" 
-                                       TextColor="White" 
-                                       VerticalOptions="Center" 
-                                       LineBreakMode="HeadTruncation" 
-                                       FontSize="12"/>
-                            </Border>
-                            <Button Grid.Column="2" 
-                                    Text="BUSCAR" 
-                                    Command="{Binding SelectXsltComercioExteriorCommand}" 
-                                    BackgroundColor="#21262D" 
-                                    TextColor="White" 
-                                    CornerRadius="8" 
-                                    HeightRequest="38"
-                                    Padding="15,0"/>
-                        </Grid>
+                            <!-- Comercio Exterior -->
+                            <Grid ColumnDefinitions="140, *, Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                <Label Grid.Column="0" Text="Comercio Exterior" TextColor="#C9D1D9" FontSize="13" VerticalOptions="Center"/>
+                                <Border Grid.Column="1" StrokeThickness="1" Stroke="#30363D" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117" Padding="10, 0" HeightRequest="38">
+                                    <Label Text="{Binding XsltComercioExteriorPath, TargetNullValue='Usar integrada (Defecto)'}" 
+                                           TextColor="White" 
+                                           VerticalOptions="Center" 
+                                           LineBreakMode="HeadTruncation" 
+                                           FontSize="12"/>
+                                </Border>
+                                <Button Grid.Column="2" 
+                                        Text="BUSCAR" 
+                                        Command="{Binding SelectXsltComercioExteriorCommand}" 
+                                        BackgroundColor="#21262D" 
+                                        TextColor="White" 
+                                        CornerRadius="8" 
+                                        HeightRequest="38"
+                                        Padding="15,0"/>
+                            </Grid>
+                        </VerticalStackLayout>
                     </VerticalStackLayout>
 
                     <!-- ================= PASO 4: CONFIRMACIÓN ================= -->

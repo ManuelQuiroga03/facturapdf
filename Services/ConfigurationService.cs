@@ -19,7 +19,7 @@ public class ConfigurationService : IConfigurationService
     private const string KeyAutoMonitor = "IsAutoMonitorActive";
     private const string KeySecurePassword = "SecureUserPassword";
     private const string KeyLogo = "LogoPath";
-    private const string KeyUseTemplatePerType = "UseTemplatePerType";
+    private const string KeyTemplateMode = "TemplateMode";
     private const string KeyXsltIngreso = "XsltIngresoPath";
     private const string KeyXsltCartaPorte = "XsltCartaPortePath";
     private const string KeyXsltPago = "XsltPagoPath";
@@ -37,7 +37,7 @@ public class ConfigurationService : IConfigurationService
             var customXslt = Preferences.Default.Get<string?>(KeyCustomXslt, null);
             var autoMonitor = Preferences.Default.Get<bool>(KeyAutoMonitor, false);
             var logo = Preferences.Default.Get<string?>(KeyLogo, null) ?? string.Empty;
-            var useTemplatePerType = Preferences.Default.Get<bool>(KeyUseTemplatePerType, false);
+            var templateMode = Preferences.Default.Get<int>(KeyTemplateMode, 1);
             var xsltIngreso = Preferences.Default.Get<string?>(KeyXsltIngreso, null) ?? string.Empty;
             var xsltCartaPorte = Preferences.Default.Get<string?>(KeyXsltCartaPorte, null) ?? string.Empty;
             var xsltPago = Preferences.Default.Get<string?>(KeyXsltPago, null) ?? string.Empty;
@@ -56,7 +56,7 @@ public class ConfigurationService : IConfigurationService
                 customXslt ?? string.Empty, 
                 autoMonitor,
                 logo,
-                useTemplatePerType,
+                templateMode,
                 xsltIngreso,
                 xsltCartaPorte,
                 xsltPago,
@@ -80,7 +80,7 @@ public class ConfigurationService : IConfigurationService
         Preferences.Default.Set(KeyCustomXslt, config.CustomXsltPath);
         Preferences.Default.Set(KeyAutoMonitor, config.IsAutoMonitorActive);
         Preferences.Default.Set(KeyLogo, config.LogoPath);
-        Preferences.Default.Set(KeyUseTemplatePerType, config.UseTemplatePerType);
+        Preferences.Default.Set(KeyTemplateMode, config.TemplateMode);
         Preferences.Default.Set(KeyXsltIngreso, config.XsltIngresoPath);
         Preferences.Default.Set(KeyXsltCartaPorte, config.XsltCartaPortePath);
         Preferences.Default.Set(KeyXsltPago, config.XsltPagoPath);
@@ -125,7 +125,7 @@ public class ConfigurationService : IConfigurationService
         Preferences.Default.Remove(KeyCustomXslt);
         Preferences.Default.Remove(KeyAutoMonitor);
         Preferences.Default.Remove(KeyLogo);
-        Preferences.Default.Remove(KeyUseTemplatePerType);
+        Preferences.Default.Remove(KeyTemplateMode);
         Preferences.Default.Remove(KeyXsltIngreso);
         Preferences.Default.Remove(KeyXsltCartaPorte);
         Preferences.Default.Remove(KeyXsltPago);

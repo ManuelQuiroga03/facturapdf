@@ -73,6 +73,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string _testLogoPath = string.Empty;
 
+    [ObservableProperty]
+    private string _testConsoleOutput = "Consola lista para depuración.";
+
+    [ObservableProperty]
+    private string _testConsoleStatus = "LISTO"; // LISTO, PROCESANDO, ÉXITO, ERROR
+
+    [ObservableProperty]
+    private bool _isTestConsoleSuccess = false;
+
     public ObservableCollection<ProcessedInvoice> ProcessingHistory { get; } = new();
     public ObservableCollection<ErrorLog> RecentErrors { get; } = new();
 
@@ -394,21 +403,59 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private async Task OpenTestPdfAsync()
+    {
+        if (string.IsNullOrWhiteSpace(TestOutputPath) || !File.Exists(TestOutputPath))
+        {
+            StatusMessage = "No hay ningún PDF de prueba generado para abrir.";
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = TestOutputPath,
+                UseShellExecute = true
+            });
+            StatusMessage = "Archivo PDF abierto con éxito.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"No se pudo abrir el PDF: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
     private async Task GenerateTestPdfAsync()
     {
         if (string.IsNullOrWhiteSpace(TestXmlPath) || !File.Exists(TestXmlPath))
         {
             StatusMessage = "Debes seleccionar un archivo XML de prueba válido.";
+            TestConsoleStatus = "ERROR";
+            TestConsoleOutput = "❌ ERROR: Archivo XML de prueba no seleccionado o no encontrado.";
+            IsTestConsoleSuccess = false;
             return;
         }
 
         if (string.IsNullOrWhiteSpace(TestOutputPath))
         {
             StatusMessage = "Debes seleccionar una ruta de destino para el PDF de prueba.";
+            TestConsoleStatus = "ERROR";
+            TestConsoleOutput = "❌ ERROR: Carpeta o ruta de destino para el PDF no seleccionada.";
+            IsTestConsoleSuccess = false;
             return;
         }
 
         StatusMessage = "Generando PDF de prueba...";
+        TestConsoleStatus = "PROCESANDO";
+        TestConsoleOutput = $"Iniciando procesamiento de prueba...\n" +
+                            $"XML: {TestXmlPath}\n" +
+                            $"XSLT: {(string.IsNullOrWhiteSpace(TestXsltPath) ? "Enrutamiento Automático" : TestXsltPath)}\n" +
+                            $"Destino: {TestOutputPath}\n\n" +
+                            $"Compilando y transformando...";
+        IsTestConsoleSuccess = false;
+
         try
         {
             string xmlContent = await File.ReadAllTextAsync(TestXmlPath);
@@ -417,28 +464,43 @@ public partial class MainViewModel : ObservableObject, IDisposable
             await _pdfGeneratorService.GeneratePdfAsync(xmlContent, xsltPath, TestOutputPath);
 
             StatusMessage = $"¡PDF de prueba generado con éxito! Guardado en: {TestOutputPath}";
-            
-            var activePage = Application.Current?.Windows?[0]?.Page;
-            if (activePage != null)
-            {
-                bool open = await activePage.DisplayAlert(
-                    "Generación Exitosa", 
-                    "¿Deseas abrir el archivo PDF de prueba ahora?", 
-                    "Sí, abrir", 
-                    "No");
-                if (open)
-                {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = TestOutputPath,
-                        UseShellExecute = true
-                    });
-                }
-            }
+            TestConsoleStatus = "ÉXITO";
+            TestConsoleOutput = $"✅ ¡PROCESAMIENTO CONCLUIDO CON ÉXITO!\n\n" +
+                                $"Archivo generado: {TestOutputPath}\n" +
+                                $"Fecha/Hora: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\n\n" +
+                                $"El PDF ha sido creado correctamente y está listo para visualizar.";
+            IsTestConsoleSuccess = true;
+        }
+        catch (System.Xml.XmlException xmlEx)
+        {
+            StatusMessage = "Error de sintaxis en el archivo XML.";
+            TestConsoleStatus = "ERROR";
+            TestConsoleOutput = $"❌ ERROR DE SINTAXIS XML\n\n" +
+                                $"Línea del error: {xmlEx.LineNumber}\n" +
+                                $"Posición del error: {xmlEx.LinePosition}\n" +
+                                $"Descripción: {xmlEx.Message}\n\n" +
+                                $"Revisa que el archivo XML no contenga etiquetas mal cerradas, caracteres huérfanos o saltos de línea inválidos en los tags.";
+            IsTestConsoleSuccess = false;
+        }
+        catch (System.Xml.Xsl.XsltException xsltEx)
+        {
+            StatusMessage = "Error en la plantilla XSLT.";
+            TestConsoleStatus = "ERROR";
+            TestConsoleOutput = $"❌ ERROR DE COMPILACIÓN XSLT\n\n" +
+                                $"Línea del error: {xsltEx.LineNumber}\n" +
+                                $"Posición del error: {xsltEx.LinePosition}\n" +
+                                $"Descripción: {xsltEx.Message}\n\n" +
+                                $"Revisa la sintaxis XPath, coincidencia de etiquetas o funciones XSLT 1.0 no soportadas en tu plantilla.";
+            IsTestConsoleSuccess = false;
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Error al generar PDF de prueba: {ex.Message}";
+            StatusMessage = $"Fallo al generar PDF: {ex.Message}";
+            TestConsoleStatus = "ERROR";
+            TestConsoleOutput = $"❌ ERROR GENERAL DEL MOTOR\n\n" +
+                                $"Mensaje: {ex.Message}\n\n" +
+                                $"Detalle Técnico: {ex.StackTrace}";
+            IsTestConsoleSuccess = false;
         }
     }
 

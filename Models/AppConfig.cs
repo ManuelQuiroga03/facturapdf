@@ -12,7 +12,7 @@ public record AppConfig(
     string CustomXsltPath,
     bool IsAutoMonitorActive,
     string LogoPath,
-    bool UseTemplatePerType,
+    int TemplateMode,
     string XsltIngresoPath,
     string XsltCartaPortePath,
     string XsltPagoPath,

@@ -39,7 +39,14 @@ public partial class WizardViewModel : ObservableObject
     private string _logoPath = string.Empty;
 
     [ObservableProperty]
-    private bool _useTemplatePerType = false;
+    [NotifyPropertyChangedFor(nameof(IsTemplateModePredeterminada))]
+    [NotifyPropertyChangedFor(nameof(IsTemplateModeGlobal))]
+    [NotifyPropertyChangedFor(nameof(IsTemplateModeSpecific))]
+    private int _templateMode = 1; // 1 = Predeterminada, 2 = Global, 3 = Por Tipo
+
+    public bool IsTemplateModePredeterminada => TemplateMode == 1;
+    public bool IsTemplateModeGlobal => TemplateMode == 2;
+    public bool IsTemplateModeSpecific => TemplateMode == 3;
 
     [ObservableProperty]
     private string _xsltIngresoPath = string.Empty;
@@ -123,23 +130,15 @@ public partial class WizardViewModel : ObservableObject
         }
         else if (CurrentStep == 3)
         {
-            // Validar si el usuario no ha especificado ninguna ruta de plantilla (Global ni por Comprobante)
-            bool hasAnyTemplate = !string.IsNullOrWhiteSpace(CustomXsltPath) ||
-                                  !string.IsNullOrWhiteSpace(XsltIngresoPath) ||
-                                  !string.IsNullOrWhiteSpace(XsltCartaPortePath) ||
-                                  !string.IsNullOrWhiteSpace(XsltPagoPath) ||
-                                  !string.IsNullOrWhiteSpace(XsltNominaPath) ||
-                                  !string.IsNullOrWhiteSpace(XsltComercioExteriorPath);
-
-            if (!hasAnyTemplate)
+            if (TemplateMode == 2 && string.IsNullOrWhiteSpace(CustomXsltPath))
             {
                 bool proceed = false;
                 var activePage = Application.Current?.Windows?[0]?.Page;
                 if (activePage != null)
                 {
                     proceed = await activePage.DisplayAlert(
-                        "Aviso de Plantilla Predeterminada",
-                        "No has seleccionado ninguna plantilla personalizada. Se utilizará la plantilla predeterminada de la aplicación (default_cfdi.xslt) para procesar todos los comprobantes. ¿Deseas continuar?",
+                        "Plantilla Global Vacía",
+                        "Has seleccionado el modo de Plantilla Global pero no has elegido ningún archivo XSLT. Se utilizará la plantilla predeterminada integrada en la aplicación. ¿Deseas continuar?",
                         "Continuar",
                         "Configurar Plantilla");
                 }
@@ -147,6 +146,33 @@ public partial class WizardViewModel : ObservableObject
                 if (!proceed)
                 {
                     return; // Permanecer en el Paso 3
+                }
+            }
+            else if (TemplateMode == 3)
+            {
+                bool hasAnySpecific = !string.IsNullOrWhiteSpace(XsltIngresoPath) ||
+                                      !string.IsNullOrWhiteSpace(XsltCartaPortePath) ||
+                                      !string.IsNullOrWhiteSpace(XsltPagoPath) ||
+                                      !string.IsNullOrWhiteSpace(XsltNominaPath) ||
+                                      !string.IsNullOrWhiteSpace(XsltComercioExteriorPath);
+
+                if (!hasAnySpecific)
+                {
+                    bool proceed = false;
+                    var activePage = Application.Current?.Windows?[0]?.Page;
+                    if (activePage != null)
+                    {
+                        proceed = await activePage.DisplayAlert(
+                            "Plantillas por Comprobante Vacías",
+                            "Has seleccionado el modo de Plantillas por Comprobante pero no has configurado ninguna ruta. Se utilizará la plantilla predeterminada integrada en la aplicación. ¿Deseas continuar?",
+                            "Continuar",
+                            "Configurar Plantillas");
+                    }
+
+                    if (!proceed)
+                    {
+                        return; // Permanecer en el Paso 3
+                    }
                 }
             }
             CurrentStep = 4;
@@ -344,25 +370,41 @@ public partial class WizardViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void SetTemplateMode(string modeStr)
+    {
+        if (int.TryParse(modeStr, out int mode))
+        {
+            TemplateMode = mode;
+        }
+    }
+
+    [RelayCommand]
     private async Task FinishConfigurationAsync()
     {
         if (!CanFinish) return;
 
         try
         {
+            string finalCustomXslt = TemplateMode == 2 ? CustomXsltPath : string.Empty;
+            string finalXsltIngreso = TemplateMode == 3 ? XsltIngresoPath : string.Empty;
+            string finalXsltCartaPorte = TemplateMode == 3 ? XsltCartaPortePath : string.Empty;
+            string finalXsltPago = TemplateMode == 3 ? XsltPagoPath : string.Empty;
+            string finalXsltNomina = TemplateMode == 3 ? XsltNominaPath : string.Empty;
+            string finalXsltComercioExterior = TemplateMode == 3 ? XsltComercioExteriorPath : string.Empty;
+
             var config = new AppConfig(
                 Email,
                 SourceFolderPath,
                 OutputFolderPath,
-                CustomXsltPath,
+                finalCustomXslt,
                 IsAutoMonitorActive: true, // Monitoreo activo por defecto
                 LogoPath,
-                UseTemplatePerType,
-                XsltIngresoPath,
-                XsltCartaPortePath,
-                XsltPagoPath,
-                XsltNominaPath,
-                XsltComercioExteriorPath
+                TemplateMode,
+                finalXsltIngreso,
+                finalXsltCartaPorte,
+                finalXsltPago,
+                finalXsltNomina,
+                finalXsltComercioExterior
             );
 
             // Guardamos la configuración y encriptamos la contraseña de forma segura
