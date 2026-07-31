@@ -509,6 +509,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 dict["MutedText"] = Color.FromArgb("#64748B");
                 dict["PanelBg"] = Color.FromArgb("#0B0F19");
                 dict["HoverBg"] = Color.FromArgb("#1E293B");
+                dict["ErrorRowBg"] = Color.FromArgb("#241416");
             }
             else
             {
@@ -521,6 +522,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 dict["MutedText"] = Color.FromArgb("#9CA3AF");
                 dict["PanelBg"] = Color.FromArgb("#F9FAFB");
                 dict["HoverBg"] = Color.FromArgb("#E5E7EB");
+                dict["ErrorRowBg"] = Color.FromArgb("#FEE2E2");
             }
         };
 

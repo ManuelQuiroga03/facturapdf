@@ -93,9 +93,9 @@
                           WidthRequest="22"
                           Aspect="Uniform"
                           VerticalOptions="Center"/>
-                    <Label Text="XML Processor" FontSize="18" FontAttributes="Bold" TextColor="White" VerticalOptions="Center"/>
+                    <Label Text="XML Processor" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}" VerticalOptions="Center"/>
                 </HorizontalStackLayout>
-                <Border StrokeThickness="0" HeightRequest="1" BackgroundColor="#222D42" Margin="0, 15, 0, 0"/>
+                <Border StrokeThickness="0" HeightRequest="1" BackgroundColor="{DynamicResource BorderColor}" Margin="0, 15, 0, 0"/>
             </VerticalStackLayout>
 
             <!-- 2. Menú de Navegación -->
@@ -115,7 +115,7 @@
                                 </VisualState>
                                 <VisualState Name="PointerOver">
                                     <VisualState.Setters>
-                                        <Setter Property="BackgroundColor" Value="#1E293B"/>
+                                        <Setter Property="BackgroundColor" Value="{DynamicResource HoverBg}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -159,8 +159,8 @@
                     </Grid>
                 </Border>
 
-                <!-- Botón Log / Bitácora (Reactivo con Triggers y Hover) -->
-                <Border StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="15, 12" Margin="10, 2" HeightRequest="45" ToolTipProperties.Text="Ver historial de errores y observabilidad">
+                <!-- Botón Bitácora (Reactivo con Triggers y Hover) -->
+                <Border StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="15, 12" Margin="10, 2" HeightRequest="45" ToolTipProperties.Text="Ver bitácora de eventos y errores">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding SwitchViewCommand}" CommandParameter="Log"/>
                     </Border.GestureRecognizers>
@@ -174,7 +174,7 @@
                                 </VisualState>
                                 <VisualState Name="PointerOver">
                                     <VisualState.Setters>
-                                        <Setter Property="BackgroundColor" Value="#1E293B"/>
+                                        <Setter Property="BackgroundColor" Value="{DynamicResource HoverBg}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -202,7 +202,7 @@
                             </Path.Triggers>
                         </Path>
                         <Label Grid.Column="1" 
-                               Text="Log / Bitácora" 
+                               Text="Bitácora" 
                                FontSize="14" 
                                FontAttributes="Bold" 
                                VerticalOptions="Center">
@@ -221,18 +221,18 @@
 
             <!-- 3. Perfil de Usuario e Información Global Bottom -->
             <VerticalStackLayout Grid.Row="2" Spacing="10" Padding="15, 10">
-                <Border StrokeThickness="0" HeightRequest="1" BackgroundColor="#222D42" Margin="0,0,0,10"/>
+                <Border StrokeThickness="0" HeightRequest="1" BackgroundColor="{DynamicResource BorderColor}" Margin="0,0,0,10"/>
                 
                 <!-- Tarjeta de Perfil -->
                 <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" Margin="10, 0, 10, 10" ToolTipProperties.Text="Sesión activa del Administrador del Sistema">
                     <!-- Avatar con Iniciales Estilizado -->
-                    <Border Grid.Column="0" WidthRequest="36" HeightRequest="36" StrokeShape="RoundRectangle 18" BackgroundColor="#1E293B" StrokeThickness="0" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Border Grid.Column="0" WidthRequest="36" HeightRequest="36" StrokeShape="RoundRectangle 18" BackgroundColor="{DynamicResource HoverBg}" StrokeThickness="0" HorizontalOptions="Center" VerticalOptions="Center">
                         <Label Text="MH" FontSize="13" FontAttributes="Bold" TextColor="#3B82F6" HorizontalOptions="Center" VerticalOptions="Center"/>
                     </Border>
                     <!-- Nombre y Rol -->
                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
-                        <Label Text="Manuel H" FontSize="13" FontAttributes="Bold" TextColor="White"/>
-                        <Label Text="System Administrator" FontSize="10" TextColor="#94A3B8"/>
+                        <Label Text="Manuel H" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}"/>
+                        <Label Text="Administrador del Sistema" FontSize="10" TextColor="{DynamicResource SecondaryText}"/>
                     </VerticalStackLayout>
                 </Grid>
 
@@ -244,8 +244,8 @@
                             <TapGestureRecognizer Command="{Binding ResetApplicationCommand}"/>
                         </HorizontalStackLayout.GestureRecognizers>
                         <Path Data="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.44.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
-                              Fill="#94A3B8" WidthRequest="13" HeightRequest="13" Aspect="Uniform" VerticalOptions="Center"/>
-                        <Label Text="Settings" FontSize="10" TextColor="#94A3B8" VerticalOptions="Center"/>
+                              Fill="{DynamicResource SecondaryText}" WidthRequest="13" HeightRequest="13" Aspect="Uniform" VerticalOptions="Center"/>
+                        <Label Text="Ajustes" FontSize="10" TextColor="{DynamicResource SecondaryText}" VerticalOptions="Center"/>
                     </HorizontalStackLayout>
                     <!-- Clear DB (Vaciar Historial) -->
                     <HorizontalStackLayout Grid.Column="1" Spacing="5" HorizontalOptions="Center" ToolTipProperties.Text="Vaciar base de datos del historial de por vida">
@@ -254,13 +254,13 @@
                         </HorizontalStackLayout.GestureRecognizers>
                         <Path Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
                               Fill="#EF4444" WidthRequest="13" HeightRequest="13" Aspect="Uniform" VerticalOptions="Center"/>
-                        <Label Text="Clear DB" FontSize="10" TextColor="#EF4444" VerticalOptions="Center" FontAttributes="Bold"/>
+                        <Label Text="Vaciar BD" FontSize="10" TextColor="#EF4444" VerticalOptions="Center" FontAttributes="Bold"/>
                     </HorizontalStackLayout>
                     <!-- Help -->
                     <HorizontalStackLayout Grid.Column="2" Spacing="5" HorizontalOptions="Center" ToolTipProperties.Text="Ver documentación o ayuda del sistema">
                         <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C12.45 11.9 12 12.5 12 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"
-                              Fill="#94A3B8" WidthRequest="13" HeightRequest="13" Aspect="Uniform" VerticalOptions="Center"/>
-                        <Label Text="Help" FontSize="10" TextColor="#94A3B8" VerticalOptions="Center"/>
+                              Fill="{DynamicResource SecondaryText}" WidthRequest="13" HeightRequest="13" Aspect="Uniform" VerticalOptions="Center"/>
+                        <Label Text="Ayuda" FontSize="10" TextColor="{DynamicResource SecondaryText}" VerticalOptions="Center"/>
                     </HorizontalStackLayout>
                 </Grid>
             </VerticalStackLayout>
@@ -287,7 +287,7 @@
                             <Grid ColumnDefinitions="Auto, *">
                                 <Path Grid.Column="0" Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
                                       Fill="{DynamicResource MutedText}" WidthRequest="14" HeightRequest="14" Aspect="Uniform" VerticalOptions="Center" Margin="0,0,10,0"/>
-                                <Entry Grid.Column="1" Placeholder="Search processes..." TextColor="{DynamicResource PrimaryText}" PlaceholderColor="{DynamicResource MutedText}" FontSize="12" Margin="0" BackgroundColor="Transparent"/>
+                                <Entry Grid.Column="1" Placeholder="Buscar procesos..." TextColor="{DynamicResource PrimaryText}" PlaceholderColor="{DynamicResource MutedText}" FontSize="12" Margin="0" BackgroundColor="Transparent"/>
                             </Grid>
                         </Border>
                         <!-- Botón de Alternancia de Tema (Claro / Oscuro) -->
@@ -331,30 +331,30 @@
                             <Border WidthRequest="8" HeightRequest="8" StrokeShape="RoundRectangle 4" BackgroundColor="#EF4444" StrokeThickness="0" HorizontalOptions="End" VerticalOptions="Start" Margin="0, 2, 2, 0"/>
                         </Grid>
                         <!-- Fecha -->
-                        <Label Text="Oct 24, 2023" TextColor="{DynamicResource SecondaryText}" FontSize="13" VerticalOptions="Center"/>
+                        <Label Text="24 Oct, 2023" TextColor="{DynamicResource SecondaryText}" FontSize="13" VerticalOptions="Center"/>
                     </HorizontalStackLayout>
                 </Grid>
 
                 <!-- Row 1: Titulo Central y Estado del Servicio -->
                 <Grid Grid.Row="1" ColumnDefinitions="*, Auto" Margin="0, 5, 0, 0">
                     <VerticalStackLayout Grid.Column="0" Spacing="2">
-                        <Label Text="Control Center" FontSize="26" FontAttributes="Bold" TextColor="White"/>
-                        <Label Text="Monitoring automated XML to PDF conversion streams." FontSize="13" TextColor="#94A3B8"/>
+                        <Label Text="Centro de Control" FontSize="26" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}"/>
+                        <Label Text="Monitoreo automatizado de conversión de XML a PDF en tiempo real." FontSize="13" TextColor="{DynamicResource SecondaryText}"/>
                     </VerticalStackLayout>
 
                     <!-- Caja de Estado del Servicio Activo -->
                     <Border Grid.Column="1" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource SidebarBg}" StrokeShape="RoundRectangle 12" Padding="15, 10" WidthRequest="260" HeightRequest="65" ToolTipProperties.Text="Activa o desactiva el servicio de escaneo automático">
                         <Grid ColumnDefinitions="*, 60" VerticalOptions="Center">
                             <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
-                                <Label Text="SERVICE STATUS" FontSize="10" TextColor="{DynamicResource MutedText}" FontAttributes="Bold"/>
+                                <Label Text="ESTADO DEL SERVICIO" FontSize="10" TextColor="{DynamicResource MutedText}" FontAttributes="Bold"/>
                                 <Label FontSize="14" FontAttributes="Bold">
                                     <Label.Triggers>
                                         <DataTrigger TargetType="Label" Binding="{Binding IsMonitoring}" Value="True">
-                                            <Setter Property="Text" Value="Active" />
+                                            <Setter Property="Text" Value="Activo" />
                                             <Setter Property="TextColor" Value="#10B981" />
                                         </DataTrigger>
                                         <DataTrigger TargetType="Label" Binding="{Binding IsMonitoring}" Value="False">
-                                            <Setter Property="Text" Value="Inactive" />
+                                            <Setter Property="Text" Value="Inactivo" />
                                             <Setter Property="TextColor" Value="#EF4444" />
                                         </DataTrigger>
                                     </Label.Triggers>
@@ -374,20 +374,20 @@
                 <Grid Grid.Row="2" ColumnDefinitions="*, *" ColumnSpacing="20">
                     
                     <!-- Tarjeta Entrada XML -->
-                    <Border Grid.Column="0" Stroke="#222D42" StrokeThickness="1" BackgroundColor="#111625" StrokeShape="RoundRectangle 12" Padding="20">
+                    <Border Grid.Column="0" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="20">
                         <VerticalStackLayout Spacing="12">
                             <!-- Cabecera -->
                             <HorizontalStackLayout Spacing="10">
                                 <Path Data="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z" 
                                       Fill="#3B82F6" WidthRequest="18" HeightRequest="18" Aspect="Uniform" VerticalOptions="Center"/>
-                                <Label Text="Source Folder (XML Input)" FontSize="14" FontAttributes="Bold" TextColor="#3B82F6" VerticalOptions="Center"/>
+                                <Label Text="Carpeta Origen (Entrada XML)" FontSize="14" FontAttributes="Bold" TextColor="#3B82F6" VerticalOptions="Center"/>
                             </HorizontalStackLayout>
                             
                             <!-- Campo y Botón -->
                             <Grid ColumnDefinitions="*, Auto" ColumnSpacing="10">
-                                <Border Grid.Column="0" BackgroundColor="#0B0F19" Stroke="#222D42" StrokeThickness="1" StrokeShape="RoundRectangle 8" Padding="12, 10" HeightRequest="42" ToolTipProperties.Text="Carpeta donde colocas los XML del SAT">
+                                <Border Grid.Column="0" BackgroundColor="{DynamicResource PanelBg}" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" StrokeShape="RoundRectangle 8" Padding="12, 10" HeightRequest="42" ToolTipProperties.Text="Carpeta donde colocas los XML del SAT">
                                     <Label Text="{Binding Config.SourceFolderPath, TargetNullValue='No configurado'}" 
-                                           TextColor="White" FontSize="12" VerticalOptions="Center" LineBreakMode="HeadTruncation"/>
+                                           TextColor="{DynamicResource PrimaryText}" FontSize="12" VerticalOptions="Center" LineBreakMode="HeadTruncation"/>
                                 </Border>
                                 
                                 <!-- Botón Browse XML con Hover Estilo BrowseButtonStyle -->
@@ -397,30 +397,30 @@
                                     </Border.GestureRecognizers>
                                     <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
                                         <Path Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" 
-                                              Fill="White" WidthRequest="12" HeightRequest="12" Aspect="Uniform" VerticalOptions="Center"/>
-                                        <Label Text="Browse" TextColor="White" FontSize="12" FontAttributes="Bold" VerticalOptions="Center"/>
+                                              Fill="{DynamicResource PrimaryText}" WidthRequest="12" HeightRequest="12" Aspect="Uniform" VerticalOptions="Center"/>
+                                        <Label Text="Examinar" TextColor="{DynamicResource PrimaryText}" FontSize="12" FontAttributes="Bold" VerticalOptions="Center"/>
                                     </HorizontalStackLayout>
                                 </Border>
                             </Grid>
-                            <Label Text="Files added here will be automatically queued for processing." FontSize="10" TextColor="#64748B" FontAttributes="Italic"/>
+                            <Label Text="Los archivos XML añadidos aquí se procesarán automáticamente." FontSize="10" TextColor="{DynamicResource SecondaryText}" FontAttributes="Italic"/>
                         </VerticalStackLayout>
                     </Border>
 
                     <!-- Tarjeta Salida PDF -->
-                    <Border Grid.Column="1" Stroke="#222D42" StrokeThickness="1" BackgroundColor="#111625" StrokeShape="RoundRectangle 12" Padding="20">
+                    <Border Grid.Column="1" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="20">
                         <VerticalStackLayout Spacing="12">
                             <!-- Cabecera -->
                             <HorizontalStackLayout Spacing="10">
                                 <Path Data="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" 
                                       Fill="#10B981" WidthRequest="18" HeightRequest="18" Aspect="Uniform" VerticalOptions="Center"/>
-                                <Label Text="Destination Folder (PDF Output)" FontSize="14" FontAttributes="Bold" TextColor="#10B981" VerticalOptions="Center"/>
+                                <Label Text="Carpeta Destino (Salida PDF)" FontSize="14" FontAttributes="Bold" TextColor="#10B981" VerticalOptions="Center"/>
                             </HorizontalStackLayout>
                             
                             <!-- Campo y Botón -->
                             <Grid ColumnDefinitions="*, Auto" ColumnSpacing="10">
-                                <Border Grid.Column="0" BackgroundColor="#0B0F19" Stroke="#222D42" StrokeThickness="1" StrokeShape="RoundRectangle 8" Padding="12, 10" HeightRequest="42" ToolTipProperties.Text="Carpeta donde se guardarán los archivos PDF resultantes">
+                                <Border Grid.Column="0" BackgroundColor="{DynamicResource PanelBg}" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" StrokeShape="RoundRectangle 8" Padding="12, 10" HeightRequest="42" ToolTipProperties.Text="Carpeta donde se guardarán los archivos PDF resultantes">
                                     <Label Text="{Binding Config.OutputFolderPath, TargetNullValue='No configurado'}" 
-                                           TextColor="White" FontSize="12" VerticalOptions="Center" LineBreakMode="HeadTruncation"/>
+                                           TextColor="{DynamicResource PrimaryText}" FontSize="12" VerticalOptions="Center" LineBreakMode="HeadTruncation"/>
                                 </Border>
                                 
                                 <!-- Botón Browse PDF con Hover -->
@@ -430,25 +430,25 @@
                                     </Border.GestureRecognizers>
                                     <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
                                         <Path Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" 
-                                              Fill="White" WidthRequest="12" HeightRequest="12" Aspect="Uniform" VerticalOptions="Center"/>
-                                        <Label Text="Browse" TextColor="White" FontSize="12" FontAttributes="Bold" VerticalOptions="Center"/>
+                                              Fill="{DynamicResource PrimaryText}" WidthRequest="12" HeightRequest="12" Aspect="Uniform" VerticalOptions="Center"/>
+                                        <Label Text="Examinar" TextColor="{DynamicResource PrimaryText}" FontSize="12" FontAttributes="Bold" VerticalOptions="Center"/>
                                     </HorizontalStackLayout>
                                 </Border>
                             </Grid>
-                            <Label Text="Successfully converted PDF documents are deposited here." FontSize="10" TextColor="#64748B" FontAttributes="Italic"/>
+                            <Label Text="Los archivos PDF generados con éxito se guardarán en esta carpeta." FontSize="10" TextColor="{DynamicResource SecondaryText}" FontAttributes="Italic"/>
                         </VerticalStackLayout>
                     </Border>
                 </Grid>
 
                 <!-- Row 3: Listado de Archivos Procesados (Card Principal) -->
-                <Border Grid.Row="3" Stroke="#222D42" StrokeThickness="1" BackgroundColor="#111625" StrokeShape="RoundRectangle 12" Padding="20">
+                <Border Grid.Row="3" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="20">
                     <Grid RowDefinitions="Auto, Auto, *, Auto" RowSpacing="12">
                         <!-- Cabecera de la Tabla -->
                         <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
                             <HorizontalStackLayout Grid.Column="0" Spacing="10">
                                 <Path Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" 
-                                      Fill="White" WidthRequest="16" HeightRequest="16" Aspect="Uniform" VerticalOptions="Center"/>
-                                <Label Text="Processed Files" FontSize="15" FontAttributes="Bold" TextColor="White" VerticalOptions="Center"/>
+                                      Fill="{DynamicResource PrimaryText}" WidthRequest="16" HeightRequest="16" Aspect="Uniform" VerticalOptions="Center"/>
+                                <Label Text="Archivos Procesados" FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}" VerticalOptions="Center"/>
                             </HorizontalStackLayout>
                             
                             <!-- Acciones (Sort & Download Iconos) con Tooltips -->
@@ -459,11 +459,11 @@
                         </Grid>
 
                         <!-- Cabeceras de Columna -->
-                        <Grid Grid.Row="1" ColumnDefinitions="*, 180, 110, 100" Padding="10, 5" BackgroundColor="#0B0F19">
-                            <Label Grid.Column="0" Text="FILE NAME" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
-                            <Label Grid.Column="1" Text="TIMESTAMP" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
-                            <Label Grid.Column="2" Text="STATUS" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
-                            <Label Grid.Column="3" Text="ACTIONS" FontSize="10" TextColor="#64748B" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        <Grid Grid.Row="1" ColumnDefinitions="*, 180, 110, 100" Padding="10, 5" BackgroundColor="{DynamicResource PanelBg}">
+                            <Label Grid.Column="0" Text="NOMBRE DE ARCHIVO" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="FECHA / HORA" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
+                            <Label Grid.Column="2" Text="ESTADO" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
+                            <Label Grid.Column="3" Text="ACCIONES" FontSize="10" TextColor="#64748B" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
                         </Grid>
 
                         <!-- Items Procesados -->
@@ -471,7 +471,7 @@
                             <CollectionView.EmptyView>
                                 <VerticalStackLayout Padding="40" HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
                                     <Path Data="M19 20H5V8H19M19 6H12L10 4H5A2 2 0 0 0 3 6V20A2 2 0 0 0 5 22H19A2 2 0 0 0 21 20V8A2 2 0 0 0 21 6Z" 
-                                          Fill="#222D42" WidthRequest="32" HeightRequest="32" Aspect="Uniform" HorizontalOptions="Center"/>
+                                          Fill="{DynamicResource BorderColor}" WidthRequest="32" HeightRequest="32" Aspect="Uniform" HorizontalOptions="Center"/>
                                     <Label Text="Historial vacío." TextColor="#94A3B8" FontSize="13" HorizontalOptions="Center"/>
                                     <Label Text="Los archivos XML procesados con éxito aparecerán aquí automáticamente." TextColor="#64748B" FontSize="11" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
                                 </VerticalStackLayout>
@@ -482,12 +482,12 @@
                                     <Border StrokeThickness="0" BackgroundColor="Transparent" Margin="0" Padding="10, 12">
                                         <Grid ColumnDefinitions="*, 180, 110, 100">
                                             <!-- Nombre de Archivo -->
-                                            <Label Grid.Column="0" Text="{Binding FileName}" FontAttributes="Bold" TextColor="White" FontSize="13" VerticalOptions="Center"/>
+                                            <Label Grid.Column="0" Text="{Binding FileName}" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}" FontSize="13" VerticalOptions="Center"/>
                                             <!-- Marca de Tiempo -->
                                             <Label Grid.Column="1" Text="{Binding Timestamp, StringFormat='Generado con éxito a las {0}'}" TextColor="#94A3B8" FontSize="11" VerticalOptions="Center"/>
                                             <!-- Badge Éxito -->
                                             <Border Grid.Column="2" StrokeThickness="1" Stroke="#10B981" BackgroundColor="#152C28" StrokeShape="RoundRectangle 12" Padding="10, 4" HorizontalOptions="Start" VerticalOptions="Center" ToolTipProperties.Text="Factura XML procesada y guardada como PDF con éxito">
-                                                <Label Text="Success" TextColor="#10B981" FontSize="10" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                <Label Text="Éxito" TextColor="#10B981" FontSize="10" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
                                             </Border>
                                             
                                             <!-- Acciones con Iconos Descriptivos y Tooltips -->
@@ -525,10 +525,10 @@
 
                         <!-- Paginación / Resumen Dinámico -->
                         <Grid Grid.Row="3" ColumnDefinitions="*, Auto" Padding="0, 5, 0, 0">
-                            <Label Grid.Column="0" Text="{Binding ProcessingHistory.Count, StringFormat='Showing {0} processed items'}" TextColor="#64748B" FontSize="12" VerticalOptions="Center"/>
+                            <Label Grid.Column="0" Text="{Binding ProcessingHistory.Count, StringFormat='Mostrando {0} elementos procesados'}" TextColor="#64748B" FontSize="12" VerticalOptions="Center"/>
                             <HorizontalStackLayout Grid.Column="1" Spacing="15" VerticalOptions="Center">
                                 <Label Text="&lt;" TextColor="#64748B" FontSize="14" FontAttributes="Bold" VerticalOptions="Center"/>
-                                <Label Text="1" TextColor="White" FontSize="12" FontAttributes="Bold" VerticalOptions="Center"/>
+                                <Label Text="1" TextColor="{DynamicResource PrimaryText}" FontSize="12" FontAttributes="Bold" VerticalOptions="Center"/>
                                 <Label Text="&gt;" TextColor="#64748B" FontSize="14" FontAttributes="Bold" VerticalOptions="Center"/>
                             </HorizontalStackLayout>
                         </Grid>
@@ -541,14 +541,14 @@
                 
                 <!-- Row 0: Cabecera Superior del Log -->
                 <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
-                    <Label Grid.Column="0" Text="Log / Bitácora" FontSize="20" FontAttributes="Bold" TextColor="White" VerticalOptions="Center"/>
+                    <Label Grid.Column="0" Text="Bitácora de Eventos" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}" VerticalOptions="Center"/>
 
                     <!-- Buscador de eventos -->
-                    <Border Grid.Column="1" BackgroundColor="#111625" Stroke="#222D42" StrokeThickness="1" StrokeShape="RoundRectangle 20" Padding="15, 0" WidthRequest="260" HeightRequest="36" VerticalOptions="Center" ToolTipProperties.Text="Buscar un evento, error o archivo de log específico">
+                    <Border Grid.Column="1" BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" StrokeShape="RoundRectangle 20" Padding="15, 0" WidthRequest="260" HeightRequest="36" VerticalOptions="Center" ToolTipProperties.Text="Buscar un evento, error o archivo de log específico">
                         <Grid ColumnDefinitions="Auto, *">
                             <Path Grid.Column="0" Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                                  Fill="#64748B" WidthRequest="14" HeightRequest="14" Aspect="Uniform" VerticalOptions="Center" Margin="0,0,10,0"/>
-                            <Entry Grid.Column="1" Placeholder="Search events, errors, or files..." TextColor="White" PlaceholderColor="#64748B" FontSize="12" Margin="0" BackgroundColor="Transparent"/>
+                                  Fill="{DynamicResource MutedText}" WidthRequest="14" HeightRequest="14" Aspect="Uniform" VerticalOptions="Center" Margin="0,0,10,0"/>
+                            <Entry Grid.Column="1" Placeholder="Buscar eventos, errores o archivos..." TextColor="{DynamicResource PrimaryText}" PlaceholderColor="{DynamicResource MutedText}" FontSize="12" Margin="0" BackgroundColor="Transparent"/>
                         </Grid>
                     </Border>
                 </Grid>
@@ -557,57 +557,57 @@
                 <Grid Grid.Row="1" ColumnDefinitions="*, *, *, *" ColumnSpacing="15">
                     
                     <!-- Tarjeta 1: Total Events -->
-                    <Border Grid.Column="0" Stroke="#222D42" StrokeThickness="1" BackgroundColor="#111625" StrokeShape="RoundRectangle 12" Padding="15" ToolTipProperties.Text="Total de documentos procesados e intentados en la historia del directorio de entrada">
+                    <Border Grid.Column="0" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="15" ToolTipProperties.Text="Total de documentos procesados e intentados en la historia del directorio de entrada">
                         <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
                             <Border Grid.Column="0" BackgroundColor="#1A2438" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="10" WidthRequest="38" HeightRequest="38">
                                 <Path Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" 
-                                      Fill="White" WidthRequest="16" HeightRequest="16" Aspect="Uniform" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                      Fill="{DynamicResource PrimaryText}" WidthRequest="16" HeightRequest="16" Aspect="Uniform" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                             <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                                <Label Text="TOTAL EVENTS" FontSize="9" FontAttributes="Bold" TextColor="#94A3B8"/>
-                                <Label Text="{Binding TotalEvents}" FontSize="18" FontAttributes="Bold" TextColor="White"/>
+                                <Label Text="TOTAL EVENTOS" FontSize="9" FontAttributes="Bold" TextColor="{DynamicResource MutedText}"/>
+                                <Label Text="{Binding TotalEvents}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}"/>
                             </VerticalStackLayout>
                         </Grid>
                     </Border>
 
                     <!-- Tarjeta 2: Failed -->
-                    <Border Grid.Column="1" Stroke="#222D42" StrokeThickness="1" BackgroundColor="#111625" StrokeShape="RoundRectangle 12" Padding="15" ToolTipProperties.Text="Facturas XML que presentaron algún fallo y residen en la carpeta de errores">
+                    <Border Grid.Column="1" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="15" ToolTipProperties.Text="Facturas XML que presentaron algún fallo y residen en la carpeta de errores">
                         <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
                             <Border Grid.Column="0" BackgroundColor="#2E1C21" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="10" WidthRequest="38" HeightRequest="38">
                                 <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" 
                                       Fill="#EF4444" WidthRequest="16" HeightRequest="16" Aspect="Uniform" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                             <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                                <Label Text="FAILED" FontSize="9" FontAttributes="Bold" TextColor="#94A3B8"/>
+                                <Label Text="FALLIDOS" FontSize="9" FontAttributes="Bold" TextColor="{DynamicResource MutedText}"/>
                                 <Label Text="{Binding RecentErrors.Count}" FontSize="18" FontAttributes="Bold" TextColor="#EF4444"/>
                             </VerticalStackLayout>
                         </Grid>
                     </Border>
 
                     <!-- Tarjeta 3: In Progress -->
-                    <Border Grid.Column="2" Stroke="#222D42" StrokeThickness="1" BackgroundColor="#111625" StrokeShape="RoundRectangle 12" Padding="15" ToolTipProperties.Text="Cantidad de facturas que se están convirtiendo en el hilo de segundo plano actualmente">
+                    <Border Grid.Column="2" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="15" ToolTipProperties.Text="Cantidad de facturas que se están convirtiendo en el hilo de segundo plano actualmente">
                         <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
                             <Border Grid.Column="0" BackgroundColor="#182A45" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="10" WidthRequest="38" HeightRequest="38">
                                 <Path Data="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm-6 8c0-1.01.25-1.97.7-2.8L5.24 6.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3c-3.31 0-6-2.69-6-6z" 
                                       Fill="#3B82F6" WidthRequest="16" HeightRequest="16" Aspect="Uniform" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                             <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                                <Label Text="IN PROGRESS" FontSize="9" FontAttributes="Bold" TextColor="#94A3B8"/>
+                                <Label Text="EN PROGRESO" FontSize="9" FontAttributes="Bold" TextColor="{DynamicResource MutedText}"/>
                                 <Label Text="{Binding InProgressEvents}" FontSize="18" FontAttributes="Bold" TextColor="#3B82F6"/>
                             </VerticalStackLayout>
                         </Grid>
                     </Border>
 
                     <!-- Tarjeta 4: Uptime -->
-                    <Border Grid.Column="3" Stroke="#222D42" StrokeThickness="1" BackgroundColor="#111625" StrokeShape="RoundRectangle 12" Padding="15" ToolTipProperties.Text="Tasa de éxito o porcentaje de facturas procesadas exitosamente frente al total">
+                    <Border Grid.Column="3" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="15" ToolTipProperties.Text="Tasa de éxito o porcentaje de facturas procesadas exitosamente frente al total">
                         <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
                             <Border Grid.Column="0" BackgroundColor="#172C24" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="10" WidthRequest="38" HeightRequest="38">
                                 <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" 
                                       Fill="#10B981" WidthRequest="16" HeightRequest="16" Aspect="Uniform" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </Border>
                             <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                                <Label Text="UPTIME" FontSize="9" FontAttributes="Bold" TextColor="#94A3B8"/>
-                                <Label Text="{Binding Uptime}" FontSize="18" FontAttributes="Bold" TextColor="White"/>
+                                <Label Text="TASA DE ÉXITO" FontSize="9" FontAttributes="Bold" TextColor="{DynamicResource MutedText}"/>
+                                <Label Text="{Binding Uptime}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}"/>
                             </VerticalStackLayout>
                         </Grid>
                     </Border>
@@ -617,11 +617,11 @@
                 <Grid Grid.Row="2" ColumnDefinitions="Auto, Auto, *, Auto" ColumnSpacing="12">
                     <!-- Botón Filtrar Estado con Hover -->
                     <Border Grid.Column="0" Style="{StaticResource HeaderActionButtonStyle}" ToolTipProperties.Text="Ver solo eventos con estado de éxito o error">
-                        <Label Text="Filter by Status" TextColor="White" FontSize="12" FontAttributes="Bold"/>
+                        <Label Text="Filtrar por Estado" TextColor="{DynamicResource PrimaryText}" FontSize="12" FontAttributes="Bold"/>
                     </Border>
                     <!-- Botón Últimas 24 Horas con Hover -->
                     <Border Grid.Column="1" Style="{StaticResource HeaderActionButtonStyle}" ToolTipProperties.Text="Acotar la bitácora de eventos a las últimas 24 horas">
-                        <Label Text="Last 24 Hours" TextColor="White" FontSize="12" FontAttributes="Bold"/>
+                        <Label Text="Últimas 24 Horas" TextColor="{DynamicResource PrimaryText}" FontSize="12" FontAttributes="Bold"/>
                     </Border>
                     
                     <!-- Botón Exportar Logs con Hover -->
@@ -648,22 +648,22 @@
                         <HorizontalStackLayout Spacing="8">
                             <Path Data="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z" 
                                   Fill="White" WidthRequest="14" HeightRequest="14" Aspect="Uniform" VerticalOptions="Center"/>
-                            <Label Text="Export Logs" TextColor="White" FontSize="12" FontAttributes="Bold" VerticalOptions="Center"/>
+                            <Label Text="Exportar Bitácora" TextColor="White" FontSize="12" FontAttributes="Bold" VerticalOptions="Center"/>
                         </HorizontalStackLayout>
                     </Border>
                 </Grid>
 
                 <!-- Row 3: Listado de Errores y Logs Recientes (Card Principal) -->
                 <Grid Grid.Row="3">
-                    <Border Stroke="#222D42" StrokeThickness="1" BackgroundColor="#111625" StrokeShape="RoundRectangle 12" Padding="20">
+                    <Border Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="20">
                         <Grid RowDefinitions="Auto, *, Auto" RowSpacing="12">
                             <!-- Cabeceras de Columna -->
-                            <Grid Grid.Row="0" ColumnDefinitions="40, 140, 90, 130, 180, *" Padding="10, 5" BackgroundColor="#0B0F19">
-                                <Label Grid.Column="1" Text="TIMESTAMP" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
-                                <Label Grid.Column="2" Text="EVENT ID" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
-                                <Label Grid.Column="3" Text="STATUS" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
-                                <Label Grid.Column="4" Text="FILE REFERENCE" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
-                                <Label Grid.Column="5" Text="ERROR DESCRIPTION" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
+                            <Grid Grid.Row="0" ColumnDefinitions="40, 140, 90, 130, 180, *" Padding="10, 5" BackgroundColor="{DynamicResource PanelBg}">
+                                <Label Grid.Column="1" Text="FECHA / HORA" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
+                                <Label Grid.Column="2" Text="ID DE EVENTO" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
+                                <Label Grid.Column="3" Text="ESTADO" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
+                                <Label Grid.Column="4" Text="REFERENCIA DE ARCHIVO" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
+                                <Label Grid.Column="5" Text="DESCRIPCIÓN DEL ERROR" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
                             </Grid>
 
                             <!-- Items del Log de Errores -->
@@ -680,21 +680,21 @@
 
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate x:DataType="models:ErrorLog">
-                                        <!-- Fondo sutil rojizo para los errores críticos -->
-                                        <Border StrokeThickness="0" BackgroundColor="#241416" Margin="0" Padding="10, 10">
+                                        <!-- Fondo sutil dinámico para los errores críticos -->
+                                        <Border StrokeThickness="0" BackgroundColor="{DynamicResource ErrorRowBg}" Margin="0" Padding="10, 10">
                                             <Grid ColumnDefinitions="40, 140, 90, 130, 180, *, Auto" ColumnSpacing="10" VerticalOptions="Center">
                                                 <!-- Checkbox -->
                                                 <CheckBox Grid.Column="0" IsChecked="False" Color="#3B82F6" VerticalOptions="Center" HorizontalOptions="Center" ToolTipProperties.Text="Seleccionar log para operaciones grupales"/>
                                                 <!-- Timestamp -->
                                                 <Label Grid.Column="1" Text="{Binding Timestamp, StringFormat='{0:yyyy-MM-dd HH:mm:ss}'}" TextColor="#94A3B8" FontSize="11" VerticalOptions="Center"/>
                                                 <!-- Event ID Dinámico -->
-                                                <Label Grid.Column="2" Text="{Binding Timestamp, StringFormat='#EVT-{0:HHmmss}'}" TextColor="White" FontSize="11" VerticalOptions="Center"/>
-                                                <!-- Badge CRITICAL ERROR -->
+                                                <Label Grid.Column="2" Text="{Binding Timestamp, StringFormat='#EVT-{0:HHmmss}'}" TextColor="{DynamicResource PrimaryText}" FontSize="11" VerticalOptions="Center"/>
+                                                <!-- Badge ERROR CRÍTICO -->
                                                 <Border Grid.Column="3" StrokeThickness="1" Stroke="#EF4444" BackgroundColor="#351B21" StrokeShape="RoundRectangle 12" Padding="8, 3" HorizontalOptions="Start" VerticalOptions="Center" ToolTipProperties.Text="Fallo crítico al validar o compilar el documento XML">
-                                                    <Label Text="CRITICAL ERROR" TextColor="#EF4444" FontSize="9" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                    <Label Text="ERROR CRÍTICO" TextColor="#EF4444" FontSize="9" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
                                                 </Border>
                                                 <!-- File Reference -->
-                                                <Label Grid.Column="4" Text="{Binding FileName}" FontAttributes="Bold" TextColor="White" FontSize="12" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
+                                                <Label Grid.Column="4" Text="{Binding FileName}" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}" FontSize="12" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
                                                 <!-- Error Description -->
                                                 <Label Grid.Column="5" Text="{Binding ErrorMessage}" TextColor="#F87171" FontSize="12" VerticalOptions="Center" LineBreakMode="WordWrap" MaxLines="2"/>
                                                 
@@ -719,7 +719,7 @@
                                                             </VisualStateGroup>
                                                         </VisualStateGroupList>
                                                     </Border.VisualStateManager.VisualStateGroups>
-                                                    <Label Text="Reprocess" TextColor="White" FontSize="11" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                                    <Label Text="Reprocesar" TextColor="White" FontSize="11" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
                                                 </Border>
                                             </Grid>
                                         </Border>
@@ -729,10 +729,10 @@
 
                             <!-- Paginación Dinámica -->
                             <Grid Grid.Row="2" ColumnDefinitions="*, Auto" Padding="0, 5, 0, 0">
-                                <Label Grid.Column="0" Text="{Binding RecentErrors.Count, StringFormat='Showing {0} active error entries'}" TextColor="#64748B" FontSize="12" VerticalOptions="Center"/>
+                                <Label Grid.Column="0" Text="{Binding RecentErrors.Count, StringFormat='Mostrando {0} entradas de error activas'}" TextColor="#64748B" FontSize="12" VerticalOptions="Center"/>
                                 <HorizontalStackLayout Grid.Column="1" Spacing="15" VerticalOptions="Center">
                                     <Label Text="&lt;" TextColor="#64748B" FontSize="14" FontAttributes="Bold" VerticalOptions="Center"/>
-                                    <Label Text="1" TextColor="White" FontSize="12" FontAttributes="Bold" VerticalOptions="Center"/>
+                                    <Label Text="1" TextColor="{DynamicResource PrimaryText}" FontSize="12" FontAttributes="Bold" VerticalOptions="Center"/>
                                     <Label Text="2" TextColor="#94A3B8" FontSize="12" VerticalOptions="Center"/>
                                     <Label Text="3" TextColor="#94A3B8" FontSize="12" VerticalOptions="Center"/>
                                     <Label Text="..." TextColor="#64748B" FontSize="12" VerticalOptions="Center"/>
@@ -744,7 +744,7 @@
                     </Border>
 
                     <!-- Tarjeta Flotante Overlay: Auto-Reprocess Active (Bottom Right) -->
-                    <Border Stroke="#3B82F6" StrokeThickness="1" BackgroundColor="#1E293B" StrokeShape="RoundRectangle 12" Padding="15" WidthRequest="300" HeightRequest="65" HorizontalOptions="End" VerticalOptions="End" Margin="0, 0, 15, 15" ToolTipProperties.Text="El background worker reintentará procesar los errores de forma automática cada 5 minutos">
+                    <Border Stroke="#3B82F6" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="15" WidthRequest="300" HeightRequest="65" HorizontalOptions="End" VerticalOptions="End" Margin="0, 0, 15, 15" ToolTipProperties.Text="El background worker reintentará procesar los errores de forma automática cada 5 minutos">
                         <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" VerticalOptions="Center">
                             <!-- Circular Lightning Icon -->
                             <Border Grid.Column="0" BackgroundColor="#263B82F6" StrokeThickness="0" StrokeShape="RoundRectangle 15" WidthRequest="30" HeightRequest="30" Padding="8" HorizontalOptions="Center" VerticalOptions="Center">
@@ -752,8 +752,8 @@
                             </Border>
                             <!-- Textos -->
                             <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                                <Label Text="Auto-Reprocess active" FontSize="12" FontAttributes="Bold" TextColor="White"/>
-                                <Label Text="3 files scheduled for retry in 2 mins." FontSize="10" TextColor="#94A3B8"/>
+                                <Label Text="Auto-reprocesamiento activo" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}"/>
+                                <Label Text="Reintento automático programado cada 5 min." FontSize="10" TextColor="{DynamicResource SecondaryText}"/>
                             </VerticalStackLayout>
                         </Grid>
                     </Border>
@@ -761,7 +761,7 @@
             </Grid>
 
             <!-- ================= BARRA DE ESTADO INFERIOR GLOBAL ================= -->
-            <Border StrokeThickness="0" BackgroundColor="#111625" Padding="20, 8" HeightRequest="35" VerticalOptions="End">
+            <Border StrokeThickness="0" BackgroundColor="{DynamicResource SidebarBg}" Padding="20, 8" HeightRequest="35" VerticalOptions="End">
                 <Label Text="{Binding StatusMessage}" FontSize="11" TextColor="#94A3B8" FontAttributes="Italic" VerticalOptions="Center"/>
             </Border>
         </Grid>
