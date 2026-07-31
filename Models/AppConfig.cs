@@ -10,5 +10,12 @@ public record AppConfig(
     string SourceFolderPath,
     string OutputFolderPath,
     string CustomXsltPath,
-    bool IsAutoMonitorActive
+    bool IsAutoMonitorActive,
+    string LogoPath,
+    bool UseTemplatePerType,
+    string XsltIngresoPath,
+    string XsltCartaPortePath,
+    string XsltPagoPath,
+    string XsltNominaPath,
+    string XsltComercioExteriorPath
 );

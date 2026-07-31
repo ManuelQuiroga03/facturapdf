@@ -7,6 +7,8 @@
   
   <xsl:output method="html" encoding="utf-8" indent="yes"/>
 
+  <xsl:param name="logoBase64" select="''"/>
+
   <xsl:template match="/">
     <html>
       <head>
@@ -252,6 +254,9 @@
           <!-- Encabezado -->
           <div class="header-grid">
             <div>
+              <xsl:if test="$logoBase64 != ''">
+                <img src="{$logoBase64}" style="max-height: 80px; max-width: 220px; margin-bottom: 12px; display: block;" />
+              </xsl:if>
               <h1 class="brand-title">
                 <xsl:value-of select="/cfdi:Comprobante/cfdi:Emisor/@Nombre"/>
               </h1>

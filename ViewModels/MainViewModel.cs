@@ -26,6 +26,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly IInvoiceProcessorService _invoiceProcessorService;
     private readonly IInvoiceMonitorService _invoiceMonitorService;
     private readonly IInvoiceHistoryService _invoiceHistoryService;
+    private readonly IPdfGeneratorService _pdfGeneratorService;
 
     [ObservableProperty]
     private AppConfig? _config;
@@ -49,10 +50,28 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private bool _isDashboardViewActive = true;
 
     [ObservableProperty]
+    private bool _isLogViewActive = false;
+
+    [ObservableProperty]
+    private bool _isTestViewActive = false;
+
+    [ObservableProperty]
     private int _totalEvents = 12482;
 
     [ObservableProperty]
     private string _uptime = "99.9%";
+
+    [ObservableProperty]
+    private string _testXmlPath = string.Empty;
+
+    [ObservableProperty]
+    private string _testXsltPath = string.Empty;
+
+    [ObservableProperty]
+    private string _testOutputPath = string.Empty;
+
+    [ObservableProperty]
+    private string _testLogoPath = string.Empty;
 
     public ObservableCollection<ProcessedInvoice> ProcessingHistory { get; } = new();
     public ObservableCollection<ErrorLog> RecentErrors { get; } = new();
@@ -61,12 +80,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
         IConfigurationService configService,
         IInvoiceProcessorService invoiceProcessorService,
         IInvoiceMonitorService invoiceMonitorService,
-        IInvoiceHistoryService invoiceHistoryService)
+        IInvoiceHistoryService invoiceHistoryService,
+        IPdfGeneratorService pdfGeneratorService)
     {
         _configService = configService;
         _invoiceProcessorService = invoiceProcessorService;
         _invoiceMonitorService = invoiceMonitorService;
         _invoiceHistoryService = invoiceHistoryService;
+        _pdfGeneratorService = pdfGeneratorService;
 
         // Suscribirse a eventos de observabilidad y estado
         _invoiceProcessorService.InvoiceProcessed += OnInvoiceProcessed;
@@ -298,6 +319,127 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void SwitchView(string viewName)
     {
         IsDashboardViewActive = viewName == "Dashboard";
+        IsLogViewActive = viewName == "Log";
+        IsTestViewActive = viewName == "Test";
+    }
+
+    [RelayCommand]
+    private async Task SelectTestXmlAsync()
+    {
+        try
+        {
+            var options = new PickOptions
+            {
+                PickerTitle = "Selecciona un archivo XML CFDI de prueba",
+                FileTypes = new FilePickerFileType(new System.Collections.Generic.Dictionary<DevicePlatform, System.Collections.Generic.IEnumerable<string>>
+                {
+                    { DevicePlatform.WinUI, new[] { ".xml" } }
+                })
+            };
+            var result = await FilePicker.Default.PickAsync(options);
+            if (result != null)
+            {
+                TestXmlPath = result.FullPath;
+                StatusMessage = "Archivo XML de prueba seleccionado.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error al seleccionar XML: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task SelectTestXsltAsync()
+    {
+        try
+        {
+            var options = new PickOptions
+            {
+                PickerTitle = "Selecciona una plantilla XSLT de prueba",
+                FileTypes = new FilePickerFileType(new System.Collections.Generic.Dictionary<DevicePlatform, System.Collections.Generic.IEnumerable<string>>
+                {
+                    { DevicePlatform.WinUI, new[] { ".xslt", ".xsl" } }
+                })
+            };
+            var result = await FilePicker.Default.PickAsync(options);
+            if (result != null)
+            {
+                TestXsltPath = result.FullPath;
+                StatusMessage = "Plantilla XSLT de prueba seleccionada.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error al seleccionar XSLT: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task SelectTestOutputAsync()
+    {
+        try
+        {
+            var folder = await PickFolderNativeAsync();
+            if (!string.IsNullOrEmpty(folder))
+            {
+                TestOutputPath = Path.Combine(folder, "Factura_Prueba.pdf");
+                StatusMessage = "Destino del PDF de prueba seleccionado.";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error al seleccionar ruta de salida: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task GenerateTestPdfAsync()
+    {
+        if (string.IsNullOrWhiteSpace(TestXmlPath) || !File.Exists(TestXmlPath))
+        {
+            StatusMessage = "Debes seleccionar un archivo XML de prueba válido.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(TestOutputPath))
+        {
+            StatusMessage = "Debes seleccionar una ruta de destino para el PDF de prueba.";
+            return;
+        }
+
+        StatusMessage = "Generando PDF de prueba...";
+        try
+        {
+            string xmlContent = await File.ReadAllTextAsync(TestXmlPath);
+            string? xsltPath = string.IsNullOrWhiteSpace(TestXsltPath) ? null : TestXsltPath;
+
+            await _pdfGeneratorService.GeneratePdfAsync(xmlContent, xsltPath, TestOutputPath);
+
+            StatusMessage = $"¡PDF de prueba generado con éxito! Guardado en: {TestOutputPath}";
+            
+            var activePage = Application.Current?.Windows?[0]?.Page;
+            if (activePage != null)
+            {
+                bool open = await activePage.DisplayAlert(
+                    "Generación Exitosa", 
+                    "¿Deseas abrir el archivo PDF de prueba ahora?", 
+                    "Sí, abrir", 
+                    "No");
+                if (open)
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = TestOutputPath,
+                        UseShellExecute = true
+                    });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error al generar PDF de prueba: {ex.Message}";
+        }
     }
 
     [RelayCommand]

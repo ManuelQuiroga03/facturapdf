@@ -14,9 +14,16 @@ namespace FacturaPDF.Services;
 /// Implementación concreta de IPdfGeneratorService usando XslCompiledTransform para
 /// procesamiento XSLT 1.0 y el control nativo WebView2 en Windows para la generación de PDF.
 /// </summary>
+
 public class PdfGeneratorService : IPdfGeneratorService
 {
+    private readonly IConfigurationService _configService;
     private WebView? _webView;
+
+    public PdfGeneratorService(IConfigurationService configService)
+    {
+        _configService = configService;
+    }
 
     /// <inheritdoc />
     public void RegisterWebView(WebView webView)
@@ -32,11 +39,68 @@ public class PdfGeneratorService : IPdfGeneratorService
             throw new InvalidOperationException("El control WebView de renderizado no ha sido registrado en el servicio.");
         }
 
-        // 1. Obtener la plantilla XSLT 1.0
-        string xsltContent;
-        if (!string.IsNullOrEmpty(customXsltPath) && File.Exists(customXsltPath))
+        // Cargar XML en XmlDocument para detectar tipo/complemento e inyectar el logotipo
+        var xmlDoc = new XmlDocument();
+        try
         {
-            xsltContent = await File.ReadAllTextAsync(customXsltPath);
+            xmlDoc.LoadXml(xmlContent);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Error al cargar el contenido XML: {ex.Message}", ex);
+        }
+
+        // Cargar configuración de la aplicación
+        var config = await _configService.LoadConfigAsync();
+
+        // 1. Determinar la plantilla XSLT a utilizar
+        string xsltContent;
+        string? resolvedXsltPath = customXsltPath;
+
+        if (string.IsNullOrEmpty(resolvedXsltPath) && config != null)
+        {
+            var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
+            nsmgr.AddNamespace("cfdi", "http://www.sat.gob.mx/cfd/4");
+            nsmgr.AddNamespace("cfdi3", "http://www.sat.gob.mx/cfd/3");
+            nsmgr.AddNamespace("cce11", "http://www.sat.gob.mx/ComercioExterior11");
+            nsmgr.AddNamespace("cce20", "http://www.sat.gob.mx/ComercioExterior20");
+            nsmgr.AddNamespace("cartaporte20", "http://www.sat.gob.mx/CartaPorte20");
+            nsmgr.AddNamespace("cartaporte30", "http://www.sat.gob.mx/CartaPorte30");
+            nsmgr.AddNamespace("pago10", "http://www.sat.gob.mx/Pagos");
+            nsmgr.AddNamespace("pago20", "http://www.sat.gob.mx/Pagos20");
+            nsmgr.AddNamespace("nomina12", "http://www.sat.gob.mx/nomina12");
+
+            if (xmlDoc.SelectSingleNode("//cce11:ComercioExterior", nsmgr) != null || xmlDoc.SelectSingleNode("//cce20:ComercioExterior", nsmgr) != null)
+            {
+                resolvedXsltPath = config.XsltComercioExteriorPath;
+            }
+            else if (xmlDoc.SelectSingleNode("//cartaporte20:CartaPorte", nsmgr) != null || xmlDoc.SelectSingleNode("//cartaporte30:CartaPorte", nsmgr) != null)
+            {
+                resolvedXsltPath = config.XsltCartaPortePath;
+            }
+            else if (xmlDoc.SelectSingleNode("//pago10:Pagos", nsmgr) != null || xmlDoc.SelectSingleNode("//pago20:Pagos", nsmgr) != null)
+            {
+                resolvedXsltPath = config.XsltPagoPath;
+            }
+            else if (xmlDoc.SelectSingleNode("//nomina12:Nomina", nsmgr) != null)
+            {
+                resolvedXsltPath = config.XsltNominaPath;
+            }
+            else
+            {
+                resolvedXsltPath = config.XsltIngresoPath;
+            }
+
+            // Fallback a Global
+            if (string.IsNullOrEmpty(resolvedXsltPath))
+            {
+                resolvedXsltPath = config.CustomXsltPath;
+            }
+        }
+
+        if (!string.IsNullOrEmpty(resolvedXsltPath) && File.Exists(resolvedXsltPath))
+        {
+            xsltContent = await File.ReadAllTextAsync(resolvedXsltPath);
         }
         else
         {
@@ -46,7 +110,30 @@ public class PdfGeneratorService : IPdfGeneratorService
             xsltContent = await reader.ReadToEndAsync();
         }
 
-        // 2. Realizar la transformación XSLT (XML + XSLT -> HTML)
+        // 2. Procesar logotipo a Base64 si está configurado
+        string logoBase64 = string.Empty;
+        if (config != null && !string.IsNullOrEmpty(config.LogoPath) && File.Exists(config.LogoPath))
+        {
+            try
+            {
+                byte[] imageBytes = await File.ReadAllBytesAsync(config.LogoPath);
+                string mimeType = Path.GetExtension(config.LogoPath).ToLower() switch
+                {
+                    ".png" => "image/png",
+                    ".jpg" or ".jpeg" => "image/jpeg",
+                    ".gif" => "image/gif",
+                    ".svg" => "image/svg+xml",
+                    _ => "image/png"
+                };
+                logoBase64 = $"data:{mimeType};base64,{Convert.ToBase64String(imageBytes)}";
+            }
+            catch (Exception)
+            {
+                // Grado Senior: Silenciamos errores de carga de logo para no romper el flujo principal
+            }
+        }
+
+        // 3. Realizar la transformación XSLT (XML + XSLT -> HTML)
         string htmlContent;
         try
         {
@@ -59,8 +146,11 @@ public class PdfGeneratorService : IPdfGeneratorService
             var transform = new XslCompiledTransform();
             transform.Load(xsltReader);
 
+            var argsList = new XsltArgumentList();
+            argsList.AddParam("logoBase64", "", logoBase64);
+
             using var htmlWriter = new StringWriter();
-            transform.Transform(xmlReader, null, htmlWriter);
+            transform.Transform(xmlReader, argsList, htmlWriter);
 
             htmlContent = htmlWriter.ToString();
         }

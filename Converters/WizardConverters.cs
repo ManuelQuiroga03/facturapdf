@@ -86,6 +86,22 @@ public class StepLessThanThreeConverter : IValueConverter
 }
 
 /// <summary>
+/// Convertidor que retorna True si el paso actual es menor que 4 (Muestra el botón Siguiente).
+/// </summary>
+public class StepLessThanFourConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is int step && step < 4;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
 /// Convertidor que invierte un valor booleano (útil para enlazar propiedades IsEnabled).
 /// </summary>
 public class InvertedBoolConverter : IValueConverter

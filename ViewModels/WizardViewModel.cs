@@ -36,9 +36,31 @@ public partial class WizardViewModel : ObservableObject
     private string _customXsltPath = string.Empty;
 
     [ObservableProperty]
+    private string _logoPath = string.Empty;
+
+    [ObservableProperty]
+    private bool _useTemplatePerType = false;
+
+    [ObservableProperty]
+    private string _xsltIngresoPath = string.Empty;
+
+    [ObservableProperty]
+    private string _xsltCartaPortePath = string.Empty;
+
+    [ObservableProperty]
+    private string _xsltPagoPath = string.Empty;
+
+    [ObservableProperty]
+    private string _xsltNominaPath = string.Empty;
+
+    [ObservableProperty]
+    private string _xsltComercioExteriorPath = string.Empty;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsStep1Visible))]
     [NotifyPropertyChangedFor(nameof(IsStep2Visible))]
     [NotifyPropertyChangedFor(nameof(IsStep3Visible))]
+    [NotifyPropertyChangedFor(nameof(IsStep4Visible))]
     [NotifyPropertyChangedFor(nameof(StepTitle))]
     private int _currentStep = 1;
 
@@ -54,12 +76,14 @@ public partial class WizardViewModel : ObservableObject
     public bool IsStep1Visible => CurrentStep == 1;
     public bool IsStep2Visible => CurrentStep == 2;
     public bool IsStep3Visible => CurrentStep == 3;
+    public bool IsStep4Visible => CurrentStep == 4;
 
     public string StepTitle => CurrentStep switch
     {
         1 => "Paso 1: Autenticación del Desarrollador",
-        2 => "Paso 2: Selección de Rutas de Trabajo",
-        3 => "Paso 3: Revisión e Inicialización",
+        2 => "Paso 2: Rutas y Logotipo de la Empresa",
+        3 => "Paso 3: Configuración de Plantilla PDF",
+        4 => "Paso 4: Revisión e Inicialización",
         _ => "Configuración"
     };
 
@@ -75,7 +99,7 @@ public partial class WizardViewModel : ObservableObject
         !string.IsNullOrWhiteSpace(OutputFolderPath);
 
     [RelayCommand]
-    private void NextStep()
+    private async Task NextStepAsync()
     {
         ErrorMessage = string.Empty;
 
@@ -96,6 +120,36 @@ public partial class WizardViewModel : ObservableObject
                 return;
             }
             CurrentStep = 3;
+        }
+        else if (CurrentStep == 3)
+        {
+            // Validar si el usuario no ha especificado ninguna ruta de plantilla (Global ni por Comprobante)
+            bool hasAnyTemplate = !string.IsNullOrWhiteSpace(CustomXsltPath) ||
+                                  !string.IsNullOrWhiteSpace(XsltIngresoPath) ||
+                                  !string.IsNullOrWhiteSpace(XsltCartaPortePath) ||
+                                  !string.IsNullOrWhiteSpace(XsltPagoPath) ||
+                                  !string.IsNullOrWhiteSpace(XsltNominaPath) ||
+                                  !string.IsNullOrWhiteSpace(XsltComercioExteriorPath);
+
+            if (!hasAnyTemplate)
+            {
+                bool proceed = false;
+                var activePage = Application.Current?.Windows?[0]?.Page;
+                if (activePage != null)
+                {
+                    proceed = await activePage.DisplayAlert(
+                        "Aviso de Plantilla Predeterminada",
+                        "No has seleccionado ninguna plantilla personalizada. Se utilizará la plantilla predeterminada de la aplicación (default_cfdi.xslt) para procesar todos los comprobantes. ¿Deseas continuar?",
+                        "Continuar",
+                        "Configurar Plantilla");
+                }
+
+                if (!proceed)
+                {
+                    return; // Permanecer en el Paso 3
+                }
+            }
+            CurrentStep = 4;
         }
     }
 
@@ -146,29 +200,147 @@ public partial class WizardViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task SelectXsltFileAsync()
+    private async Task SelectLogoAsync()
     {
         try
         {
-            var options = new PickOptions
-            {
-                PickerTitle = "Selecciona una plantilla XSLT 1.0",
-                FileTypes = new FilePickerFileType(new System.Collections.Generic.Dictionary<DevicePlatform, System.Collections.Generic.IEnumerable<string>>
-                {
-                    { DevicePlatform.WinUI, new[] { ".xslt", ".xsl" } }
-                })
-            };
-
-            var result = await FilePicker.Default.PickAsync(options);
+            var result = await PickImageFileAsync("Selecciona la imagen del logotipo");
             if (result != null)
             {
-                CustomXsltPath = result.FullPath;
+                LogoPath = result;
             }
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Error al seleccionar archivo XSLT: {ex.Message}";
+            ErrorMessage = $"Error al seleccionar logotipo: {ex.Message}";
         }
+    }
+
+    [RelayCommand]
+    private async Task SelectXsltFileAsync()
+    {
+        try
+        {
+            var result = await PickXsltFileAsync("Selecciona una plantilla XSLT 1.0 Global");
+            if (result != null)
+            {
+                CustomXsltPath = result;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error al seleccionar plantilla global: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task SelectXsltIngresoAsync()
+    {
+        try
+        {
+            var result = await PickXsltFileAsync("Selecciona plantilla para Facturas de Ingreso");
+            if (result != null)
+            {
+                XsltIngresoPath = result;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error al seleccionar plantilla: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task SelectXsltCartaPorteAsync()
+    {
+        try
+        {
+            var result = await PickXsltFileAsync("Selecciona plantilla para Carta Porte / Traslado");
+            if (result != null)
+            {
+                XsltCartaPortePath = result;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error al seleccionar plantilla: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task SelectXsltPagoAsync()
+    {
+        try
+        {
+            var result = await PickXsltFileAsync("Selecciona plantilla para Complementos de Pago");
+            if (result != null)
+            {
+                XsltPagoPath = result;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error al seleccionar plantilla: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task SelectXsltNominaAsync()
+    {
+        try
+        {
+            var result = await PickXsltFileAsync("Selecciona plantilla para Recibos de Nómina");
+            if (result != null)
+            {
+                XsltNominaPath = result;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error al seleccionar plantilla: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    private async Task SelectXsltComercioExteriorAsync()
+    {
+        try
+        {
+            var result = await PickXsltFileAsync("Selecciona plantilla para Comercio Exterior");
+            if (result != null)
+            {
+                XsltComercioExteriorPath = result;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error al seleccionar plantilla: {ex.Message}";
+        }
+    }
+
+    private async Task<string?> PickXsltFileAsync(string title)
+    {
+        var options = new PickOptions
+        {
+            PickerTitle = title,
+            FileTypes = new FilePickerFileType(new System.Collections.Generic.Dictionary<DevicePlatform, System.Collections.Generic.IEnumerable<string>>
+            {
+                { DevicePlatform.WinUI, new[] { ".xslt", ".xsl" } }
+            })
+        };
+        var result = await FilePicker.Default.PickAsync(options);
+        return result?.FullPath;
+    }
+
+    private async Task<string?> PickImageFileAsync(string title)
+    {
+        var options = new PickOptions
+        {
+            PickerTitle = title,
+            FileTypes = FilePickerFileType.Images
+        };
+        var result = await FilePicker.Default.PickAsync(options);
+        return result?.FullPath;
     }
 
     [RelayCommand]
@@ -183,7 +355,14 @@ public partial class WizardViewModel : ObservableObject
                 SourceFolderPath,
                 OutputFolderPath,
                 CustomXsltPath,
-                IsAutoMonitorActive: true // Monitoreo activo por defecto
+                IsAutoMonitorActive: true, // Monitoreo activo por defecto
+                LogoPath,
+                UseTemplatePerType,
+                XsltIngresoPath,
+                XsltCartaPortePath,
+                XsltPagoPath,
+                XsltNominaPath,
+                XsltComercioExteriorPath
             );
 
             // Guardamos la configuración y encriptamos la contraseña de forma segura

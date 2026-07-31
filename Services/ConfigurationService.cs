@@ -18,6 +18,13 @@ public class ConfigurationService : IConfigurationService
     private const string KeyCustomXslt = "CustomXsltPath";
     private const string KeyAutoMonitor = "IsAutoMonitorActive";
     private const string KeySecurePassword = "SecureUserPassword";
+    private const string KeyLogo = "LogoPath";
+    private const string KeyUseTemplatePerType = "UseTemplatePerType";
+    private const string KeyXsltIngreso = "XsltIngresoPath";
+    private const string KeyXsltCartaPorte = "XsltCartaPortePath";
+    private const string KeyXsltPago = "XsltPagoPath";
+    private const string KeyXsltNomina = "XsltNominaPath";
+    private const string KeyXsltComercioExterior = "XsltComercioExteriorPath";
 
     /// <inheritdoc />
     public Task<AppConfig?> LoadConfigAsync()
@@ -29,6 +36,13 @@ public class ConfigurationService : IConfigurationService
             var outputFolder = Preferences.Default.Get<string?>(KeyOutputFolder, null);
             var customXslt = Preferences.Default.Get<string?>(KeyCustomXslt, null);
             var autoMonitor = Preferences.Default.Get<bool>(KeyAutoMonitor, false);
+            var logo = Preferences.Default.Get<string?>(KeyLogo, null) ?? string.Empty;
+            var useTemplatePerType = Preferences.Default.Get<bool>(KeyUseTemplatePerType, false);
+            var xsltIngreso = Preferences.Default.Get<string?>(KeyXsltIngreso, null) ?? string.Empty;
+            var xsltCartaPorte = Preferences.Default.Get<string?>(KeyXsltCartaPorte, null) ?? string.Empty;
+            var xsltPago = Preferences.Default.Get<string?>(KeyXsltPago, null) ?? string.Empty;
+            var xsltNomina = Preferences.Default.Get<string?>(KeyXsltNomina, null) ?? string.Empty;
+            var xsltComercioExterior = Preferences.Default.Get<string?>(KeyXsltComercioExterior, null) ?? string.Empty;
 
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(sourceFolder) || string.IsNullOrEmpty(outputFolder))
             {
@@ -40,7 +54,14 @@ public class ConfigurationService : IConfigurationService
                 sourceFolder, 
                 outputFolder, 
                 customXslt ?? string.Empty, 
-                autoMonitor
+                autoMonitor,
+                logo,
+                useTemplatePerType,
+                xsltIngreso,
+                xsltCartaPorte,
+                xsltPago,
+                xsltNomina,
+                xsltComercioExterior
             ));
         }
         catch (Exception)
@@ -58,6 +79,13 @@ public class ConfigurationService : IConfigurationService
         Preferences.Default.Set(KeyOutputFolder, config.OutputFolderPath);
         Preferences.Default.Set(KeyCustomXslt, config.CustomXsltPath);
         Preferences.Default.Set(KeyAutoMonitor, config.IsAutoMonitorActive);
+        Preferences.Default.Set(KeyLogo, config.LogoPath);
+        Preferences.Default.Set(KeyUseTemplatePerType, config.UseTemplatePerType);
+        Preferences.Default.Set(KeyXsltIngreso, config.XsltIngresoPath);
+        Preferences.Default.Set(KeyXsltCartaPorte, config.XsltCartaPortePath);
+        Preferences.Default.Set(KeyXsltPago, config.XsltPagoPath);
+        Preferences.Default.Set(KeyXsltNomina, config.XsltNominaPath);
+        Preferences.Default.Set(KeyXsltComercioExterior, config.XsltComercioExteriorPath);
 
         if (!string.IsNullOrEmpty(password))
         {
@@ -96,6 +124,13 @@ public class ConfigurationService : IConfigurationService
         Preferences.Default.Remove(KeyOutputFolder);
         Preferences.Default.Remove(KeyCustomXslt);
         Preferences.Default.Remove(KeyAutoMonitor);
+        Preferences.Default.Remove(KeyLogo);
+        Preferences.Default.Remove(KeyUseTemplatePerType);
+        Preferences.Default.Remove(KeyXsltIngreso);
+        Preferences.Default.Remove(KeyXsltCartaPorte);
+        Preferences.Default.Remove(KeyXsltPago);
+        Preferences.Default.Remove(KeyXsltNomina);
+        Preferences.Default.Remove(KeyXsltComercioExterior);
 
         SecureStorage.Default.Remove(KeySecurePassword);
         await Task.CompletedTask;

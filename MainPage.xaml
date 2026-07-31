@@ -181,22 +181,22 @@
                         </VisualStateGroupList>
                     </Border.VisualStateManager.VisualStateGroups>
                     <Border.Triggers>
-                        <DataTrigger TargetType="Border" Binding="{Binding IsDashboardViewActive}" Value="False">
+                        <DataTrigger TargetType="Border" Binding="{Binding IsLogViewActive}" Value="True">
                             <Setter Property="BackgroundColor" Value="#3B82F6"/>
                         </DataTrigger>
                     </Border.Triggers>
                     <Grid ColumnDefinitions="Auto, *" ColumnSpacing="15">
                         <Path Grid.Column="0" 
-                              Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" 
-                              WidthRequest="16" 
-                              HeightRequest="16"
-                              Aspect="Uniform"
-                              VerticalOptions="Center">
+                               Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" 
+                               WidthRequest="16" 
+                               HeightRequest="16"
+                               Aspect="Uniform"
+                               VerticalOptions="Center">
                             <Path.Triggers>
-                                <DataTrigger TargetType="Path" Binding="{Binding IsDashboardViewActive}" Value="False">
+                                <DataTrigger TargetType="Path" Binding="{Binding IsLogViewActive}" Value="True">
                                     <Setter Property="Fill" Value="#FFFFFF"/>
                                 </DataTrigger>
-                                <DataTrigger TargetType="Path" Binding="{Binding IsDashboardViewActive}" Value="True">
+                                <DataTrigger TargetType="Path" Binding="{Binding IsLogViewActive}" Value="False">
                                     <Setter Property="Fill" Value="#94A3B8"/>
                                 </DataTrigger>
                             </Path.Triggers>
@@ -207,10 +207,69 @@
                                FontAttributes="Bold" 
                                VerticalOptions="Center">
                             <Label.Triggers>
-                                <DataTrigger TargetType="Label" Binding="{Binding IsDashboardViewActive}" Value="False">
+                                <DataTrigger TargetType="Label" Binding="{Binding IsLogViewActive}" Value="True">
                                     <Setter Property="TextColor" Value="#FFFFFF"/>
                                 </DataTrigger>
-                                <DataTrigger TargetType="Label" Binding="{Binding IsDashboardViewActive}" Value="True">
+                                <DataTrigger TargetType="Label" Binding="{Binding IsLogViewActive}" Value="False">
+                                    <Setter Property="TextColor" Value="#94A3B8"/>
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                    </Grid>
+                </Border>
+
+                <!-- Botón Laboratorio XSLT (Reactivo con Triggers y Hover) -->
+                <Border StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="15, 12" Margin="10, 2" HeightRequest="45" ToolTipProperties.Text="Probar plantillas XSLT con archivos XML de prueba">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SwitchViewCommand}" CommandParameter="Test"/>
+                    </Border.GestureRecognizers>
+                    <Border.VisualStateManager.VisualStateGroups>
+                        <VisualStateGroupList>
+                            <VisualStateGroup Name="CommonStates">
+                                <VisualState Name="Normal">
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor" Value="Transparent"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Property="BackgroundColor" Value="{DynamicResource HoverBg}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateGroupList>
+                    </Border.VisualStateManager.VisualStateGroups>
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding IsTestViewActive}" Value="True">
+                            <Setter Property="BackgroundColor" Value="#3B82F6"/>
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Grid ColumnDefinitions="Auto, *" ColumnSpacing="15">
+                        <Path Grid.Column="0" 
+                               Data="M19 18l-5-7.5V5h1V3H9v2h1v5.5L5 18c-.7 1.1-.3 2.5.8 3.2.4.2.8.3 1.2.3h10c1.3 0 2.3-1 2.3-2.3 0-.5-.2-1-.3-1.2z" 
+                               WidthRequest="16" 
+                               HeightRequest="16"
+                               Aspect="Uniform"
+                               VerticalOptions="Center">
+                            <Path.Triggers>
+                                <DataTrigger TargetType="Path" Binding="{Binding IsTestViewActive}" Value="True">
+                                    <Setter Property="Fill" Value="#FFFFFF"/>
+                                </DataTrigger>
+                                <DataTrigger TargetType="Path" Binding="{Binding IsTestViewActive}" Value="False">
+                                    <Setter Property="Fill" Value="#94A3B8"/>
+                                </DataTrigger>
+                            </Path.Triggers>
+                        </Path>
+                        <Label Grid.Column="1" 
+                               Text="Laboratorio XSLT" 
+                               FontSize="14" 
+                               FontAttributes="Bold" 
+                               VerticalOptions="Center">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsTestViewActive}" Value="True">
+                                    <Setter Property="TextColor" Value="#FFFFFF"/>
+                                </DataTrigger>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsTestViewActive}" Value="False">
                                     <Setter Property="TextColor" Value="#94A3B8"/>
                                 </DataTrigger>
                             </Label.Triggers>
@@ -537,7 +596,7 @@
             </Grid>
 
             <!-- ================= SUB-PANEL B: LOG / BITÁCORA VIEW ================= -->
-            <Grid IsVisible="{Binding IsDashboardViewActive, Converter={StaticResource Key=InvertedBoolConverter}}" RowDefinitions="Auto, Auto, Auto, *" Padding="25" RowSpacing="20">
+            <Grid IsVisible="{Binding IsLogViewActive}" RowDefinitions="Auto, Auto, Auto, *" Padding="25" RowSpacing="20">
                 
                 <!-- Row 0: Cabecera Superior del Log -->
                 <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
@@ -758,6 +817,94 @@
                         </Grid>
                     </Border>
                 </Grid>
+            </Grid>
+
+            <!-- ================= SUB-PANEL C: LABORATORIO XSLT VIEW ================= -->
+            <Grid IsVisible="{Binding IsTestViewActive}" RowDefinitions="Auto, *" Padding="25" RowSpacing="20">
+                <!-- Row 0: Cabecera -->
+                <Label Grid.Row="0" Text="Laboratorio de Pruebas XSLT" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}"/>
+
+                <!-- Row 1: Formulario principal -->
+                <ScrollView Grid.Row="1">
+                    <Border Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="25" VerticalOptions="Start" MaximumWidthRequest="800" HorizontalOptions="Start">
+                        <VerticalStackLayout Spacing="25">
+                            <Label Text="Usa esta herramienta para validar y depurar tus transformaciones XSLT de forma aislada. Selecciona un XML de prueba, un XSLT específico y la ubicación donde deseas guardar el PDF de prueba." TextColor="{DynamicResource SecondaryText}" FontSize="13" LineBreakMode="WordWrap"/>
+
+                            <!-- XML de Prueba -->
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Archivo XML de Prueba" TextColor="{DynamicResource PrimaryText}" FontSize="14" FontAttributes="Bold"/>
+                                <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12">
+                                    <Border Grid.Column="0" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource PanelBg}" StrokeShape="RoundRectangle 8" Padding="15, 0" HeightRequest="42">
+                                        <Label Text="{Binding TestXmlPath, TargetNullValue='No se ha seleccionado ningún XML de prueba'}" TextColor="{DynamicResource PrimaryText}" VerticalOptions="Center" FontSize="13" LineBreakMode="HeadTruncation"/>
+                                    </Border>
+                                    <Border Grid.Column="1" Style="{StaticResource BrowseButtonStyle}" WidthRequest="120" HeightRequest="42">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding SelectTestXmlCommand}"/>
+                                        </Border.GestureRecognizers>
+                                        <Label Text="Examinar..." TextColor="{DynamicResource PrimaryText}" FontSize="13" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </Border>
+                                </Grid>
+                            </VerticalStackLayout>
+
+                            <!-- XSLT de Prueba -->
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Plantilla XSLT de Prueba (Opcional)" TextColor="{DynamicResource PrimaryText}" FontSize="14" FontAttributes="Bold"/>
+                                <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12">
+                                    <Border Grid.Column="0" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource PanelBg}" StrokeShape="RoundRectangle 8" Padding="15, 0" HeightRequest="42">
+                                        <Label Text="{Binding TestXsltPath, TargetNullValue='Enrutamiento Automático (Usa la configuración del sistema / default)'}" TextColor="{DynamicResource SecondaryText}" VerticalOptions="Center" FontSize="13" LineBreakMode="HeadTruncation"/>
+                                    </Border>
+                                    <Border Grid.Column="1" Style="{StaticResource BrowseButtonStyle}" WidthRequest="120" HeightRequest="42">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding SelectTestXsltCommand}"/>
+                                        </Border.GestureRecognizers>
+                                        <Label Text="Examinar..." TextColor="{DynamicResource PrimaryText}" FontSize="13" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </Border>
+                                </Grid>
+                                <Label Text="* Si dejas esta plantilla en blanco, la app detectará automáticamente el tipo de comprobante (Ingreso, Pago, Carta Porte, Nómina, etc.) y usará la plantilla configurada en el sistema." TextColor="{DynamicResource MutedText}" FontSize="11" FontAttributes="Italic"/>
+                            </VerticalStackLayout>
+
+                            <!-- Ruta de Salida PDF -->
+                            <VerticalStackLayout Spacing="6">
+                                <Label Text="Carpeta de Salida para el PDF de Prueba" TextColor="{DynamicResource PrimaryText}" FontSize="14" FontAttributes="Bold"/>
+                                <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12">
+                                    <Border Grid.Column="0" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource PanelBg}" StrokeShape="RoundRectangle 8" Padding="15, 0" HeightRequest="42">
+                                        <Label Text="{Binding TestOutputPath, TargetNullValue='Selecciona la carpeta para depositar el archivo Factura_Prueba.pdf'}" TextColor="{DynamicResource PrimaryText}" VerticalOptions="Center" FontSize="13" LineBreakMode="HeadTruncation"/>
+                                    </Border>
+                                    <Border Grid.Column="1" Style="{StaticResource BrowseButtonStyle}" WidthRequest="120" HeightRequest="42">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding SelectTestOutputCommand}"/>
+                                        </Border.GestureRecognizers>
+                                        <Label Text="Examinar..." TextColor="{DynamicResource PrimaryText}" FontSize="13" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </Border>
+                                </Grid>
+                            </VerticalStackLayout>
+
+                            <!-- Botón Generar -->
+                            <Border StrokeThickness="0" StrokeShape="RoundRectangle 8" BackgroundColor="#10B981" HeightRequest="48" Margin="0, 15, 0, 0" WidthRequest="220" HorizontalOptions="Center">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding GenerateTestPdfCommand}"/>
+                                </Border.GestureRecognizers>
+                                <Border.VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroupList>
+                                        <VisualStateGroup Name="CommonStates">
+                                            <VisualState Name="Normal">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="#10B981"/>
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                            <VisualState Name="PointerOver">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="#059669"/>
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateGroupList>
+                                </Border.VisualStateManager.VisualStateGroups>
+                                <Label Text="Generar PDF de Prueba" TextColor="White" FontSize="14" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            </Border>
+                        </VerticalStackLayout>
+                    </Border>
+                </ScrollView>
             </Grid>
 
             <!-- ================= BARRA DE ESTADO INFERIOR GLOBAL ================= -->
