@@ -177,6 +177,73 @@
             padding: 3px 6px;
             border-radius: 4px;
           }
+
+          /* Digital Stamp Section */
+          .stamps-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 25px;
+            border-top: 1px solid #E5E7EB;
+            padding-top: 20px;
+          }
+
+          .qr-code-box {
+            flex: 0 0 130px;
+            text-align: center;
+          }
+
+          .qr-code-box img {
+            width: 120px;
+            height: 120px;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            padding: 5px;
+            background-color: #FFFFFF;
+          }
+
+          .stamps-info {
+            flex: 1;
+            min-width: 0;
+          }
+
+          .metadata-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 15px;
+            margin-bottom: 12px;
+            font-size: 9px;
+            color: #4B5563;
+          }
+
+          .stamp-group {
+            margin-bottom: 10px;
+          }
+
+          .stamp-group:last-child {
+            margin-bottom: 0;
+          }
+
+          .stamp-title {
+            font-weight: 600;
+            color: #374151;
+            font-size: 9px;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+          }
+
+          .stamp-text {
+            font-family: monospace;
+            font-size: 8px;
+            line-height: 1.4;
+            color: #4B5563;
+            word-break: break-all;
+            white-space: pre-wrap;
+            background-color: #F9FAFB;
+            border: 1px solid #F3F4F6;
+            border-radius: 4px;
+            padding: 6px;
+            margin: 0;
+          }
         </style>
       </head>
       <body>
@@ -282,20 +349,108 @@
 
           <!-- Sello y Timbre -->
           <div class="footer-section">
-            <p>
-              <span class="label">UUID (Folio Fiscal):</span><br/>
-              <span class="uuid-text">
+            <!-- Variables para construir la URL del SAT y QR -->
+            <xsl:variable name="uuid" select="//*[local-name()='TimbreFiscalDigital']/@UUID"/>
+            <xsl:variable name="rfcEmisor" select="/cfdi:Comprobante/cfdi:Emisor/@Rfc"/>
+            <xsl:variable name="rfcReceptor" select="/cfdi:Comprobante/cfdi:Receptor/@Rfc"/>
+            <xsl:variable name="total" select="/cfdi:Comprobante/@Total"/>
+            <xsl:variable name="sello" select="/cfdi:Comprobante/@Sello"/>
+            <xsl:variable name="sello8" select="substring($sello, string-length($sello) - 7)"/>
+            
+            <div class="stamps-container">
+              <!-- QR Code -->
+              <div class="qr-code-box">
                 <xsl:choose>
-                  <xsl:when test="//*[local-name()='TimbreFiscalDigital']/@UUID">
-                    <xsl:value-of select="//*[local-name()='TimbreFiscalDigital']/@UUID"/>
+                  <xsl:when test="$uuid">
+                    <img>
+                      <xsl:attribute name="src">
+                        <xsl:value-of select="concat('https://api.qrserver.com/v1/create-qr-code/?size=150x150&amp;data=https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?id%3D', $uuid, '%26re%3D', $rfcEmisor, '%26rr%3D', $rfcReceptor, '%26tt%3D', $total, '%26fe%3D', $sello8)"/>
+                      </xsl:attribute>
+                      <xsl:attribute name="alt">Código QR de Verificación SAT</xsl:attribute>
+                    </img>
                   </xsl:when>
                   <xsl:otherwise>
-                    DOCUMENTO NO TIMBRADO / DEMOSTRACIÓN
+                    <div style="width: 120px; height: 120px; border: 1px dashed #D1D5DB; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #9CA3AF; border-radius: 6px; background-color: #F9FAFB;">
+                      QR NO DISPONIBLE
+                    </div>
                   </xsl:otherwise>
                 </xsl:choose>
-              </span>
-            </p>
-            <p style="margin-top: 15px; font-size: 9px; text-align: center; color: #9CA3AF;">
+              </div>
+
+              <!-- Stamps and Metadata -->
+              <div class="stamps-info">
+                <div class="metadata-grid">
+                  <div>
+                    <span class="label">Folio Fiscal (UUID):</span><br/>
+                    <xsl:choose>
+                      <xsl:when test="$uuid"><xsl:value-of select="$uuid"/></xsl:when>
+                      <xsl:otherwise>DOCUMENTO NO TIMBRADO</xsl:otherwise>
+                    </xsl:choose>
+                  </div>
+                  <div>
+                    <span class="label">No. Certificado SAT:</span><br/>
+                    <xsl:choose>
+                      <xsl:when test="//*[local-name()='TimbreFiscalDigital']/@NoCertificadoSAT">
+                        <xsl:value-of select="//*[local-name()='TimbreFiscalDigital']/@NoCertificadoSAT"/>
+                      </xsl:when>
+                      <xsl:otherwise>N/A</xsl:otherwise>
+                    </xsl:choose>
+                  </div>
+                  <div>
+                    <span class="label">RFC Prov. Certificación:</span><br/>
+                    <xsl:choose>
+                      <xsl:when test="//*[local-name()='TimbreFiscalDigital']/@RfcProvCertif">
+                        <xsl:value-of select="//*[local-name()='TimbreFiscalDigital']/@RfcProvCertif"/>
+                      </xsl:when>
+                      <xsl:otherwise>N/A</xsl:otherwise>
+                    </xsl:choose>
+                  </div>
+                  <div>
+                    <span class="label">Fecha y Hora de Certificación:</span><br/>
+                    <xsl:choose>
+                      <xsl:when test="//*[local-name()='TimbreFiscalDigital']/@FechaTimbrado">
+                        <xsl:value-of select="//*[local-name()='TimbreFiscalDigital']/@FechaTimbrado"/>
+                      </xsl:when>
+                      <xsl:otherwise>N/A</xsl:otherwise>
+                    </xsl:choose>
+                  </div>
+                  <div>
+                    <span class="label">No. Certificado Emisor:</span><br/>
+                    <xsl:value-of select="/cfdi:Comprobante/@NoCertificado"/>
+                  </div>
+                  <div>
+                    <span class="label">Régimen Fiscal Emisor:</span><br/>
+                    <xsl:value-of select="/cfdi:Comprobante/cfdi:Emisor/@RegimenFiscal"/>
+                  </div>
+                </div>
+
+                <!-- Sello CFD -->
+                <xsl:if test="$sello">
+                  <div class="stamp-group">
+                    <div class="stamp-title">Sello Digital del CFDI</div>
+                    <div class="stamp-text"><xsl:value-of select="$sello"/></div>
+                  </div>
+                </xsl:if>
+
+                <!-- Sello SAT -->
+                <xsl:if test="//*[local-name()='TimbreFiscalDigital']/@SelloSAT">
+                  <div class="stamp-group">
+                    <div class="stamp-title">Sello Digital del SAT</div>
+                    <div class="stamp-text"><xsl:value-of select="//*[local-name()='TimbreFiscalDigital']/@SelloSAT"/></div>
+                  </div>
+                </xsl:if>
+
+                <!-- Cadena Original del SAT -->
+                <xsl:if test="$uuid">
+                  <div class="stamp-group">
+                    <div class="stamp-title">Cadena Original del Complemento de Certificación Digital del SAT</div>
+                    <div class="stamp-text">||<xsl:value-of select="//*[local-name()='TimbreFiscalDigital']/@Version"/>|<xsl:value-of select="$uuid"/>|<xsl:value-of select="//*[local-name()='TimbreFiscalDigital']/@FechaTimbrado"/>|<xsl:value-of select="//*[local-name()='TimbreFiscalDigital']/@RfcProvCertif"/>|<xsl:value-of select="//*[local-name()='TimbreFiscalDigital']/@SelloCFD"/>|<xsl:value-of select="//*[local-name()='TimbreFiscalDigital']/@NoCertificadoSAT"/>||</div>
+                  </div>
+                </xsl:if>
+              </div>
+            </div>
+            
+            <p style="margin-top: 20px; font-size: 9px; text-align: center; color: #9CA3AF;">
               Representación impresa digital de un CFDI Versión 4.0 - Generado de forma local por FacturaPDF.
             </p>
           </div>
