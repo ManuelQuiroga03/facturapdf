@@ -119,6 +119,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _invoiceProcessorService.BatchStarted += OnBatchStarted;
         _invoiceProcessorService.BatchCompleted += OnBatchCompleted;
         _invoiceMonitorService.MonitoringStateChanged += OnMonitoringStateChanged;
+        ResetTestConsoleState();
+    }
+
+    partial void OnTestXmlPathChanged(string value) => ResetTestConsoleState();
+    partial void OnTestXsltPathChanged(string? value) => ResetTestConsoleState();
+    partial void OnTestOutputPathChanged(string value) => ResetTestConsoleState();
+
+    private void ResetTestConsoleState()
+    {
+        IsTestConsoleSuccess = false;
+        TestConsoleStatus = "LISTO";
+        TestConsoleOutput = "Consola lista para depuración. Selecciona los archivos y presiona 'Generar PDF de Prueba'.";
     }
 
     [RelayCommand]

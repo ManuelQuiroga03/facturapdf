@@ -966,7 +966,7 @@
                                     </Border>
 
                                     <!-- Botón para abrir el archivo (Dinámico a un costado) -->
-                                    <Border Grid.Column="1" StrokeThickness="0" StrokeShape="RoundRectangle 8" BackgroundColor="#3B82F6" HeightRequest="44" WidthRequest="170" IsVisible="{Binding IsTestConsoleSuccess}">
+                                    <Border Grid.Column="1" StrokeThickness="0" StrokeShape="RoundRectangle 8" BackgroundColor="#3B82F6" HeightRequest="44" WidthRequest="170" IsEnabled="{Binding IsTestConsoleSuccess}">
                                         <Border.GestureRecognizers>
                                             <TapGestureRecognizer Command="{Binding OpenTestPdfCommand}"/>
                                         </Border.GestureRecognizers>
@@ -981,6 +981,12 @@
                                                     <VisualState Name="PointerOver">
                                                         <VisualState.Setters>
                                                             <Setter Property="BackgroundColor" Value="#2563EB"/>
+                                                        </VisualState.Setters>
+                                                    </VisualState>
+                                                    <VisualState Name="Disabled">
+                                                        <VisualState.Setters>
+                                                            <Setter Property="BackgroundColor" Value="#1E293B"/>
+                                                            <Setter Property="Opacity" Value="0.4"/>
                                                         </VisualState.Setters>
                                                     </VisualState>
                                                 </VisualStateGroup>
