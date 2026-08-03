@@ -18,6 +18,7 @@ namespace FacturaPDF.Services;
 public class PdfGeneratorService : IPdfGeneratorService
 {
     private readonly IConfigurationService _configService;
+    private readonly System.Threading.SemaphoreSlim _printSemaphore = new(1, 1);
     private WebView? _webView;
 
     public PdfGeneratorService(IConfigurationService configService)
@@ -159,74 +160,82 @@ public class PdfGeneratorService : IPdfGeneratorService
             throw new InvalidOperationException($"Error al aplicar la transformación XSLT: {ex.Message}", ex);
         }
 
-        // 3. Renderizar e Imprimir a PDF en el Hilo de la UI principal
-        await MainThread.InvokeOnMainThreadAsync(async () =>
+        // 3. Renderizar e Imprimir a PDF en el Hilo de la UI principal de forma serializada (Thread-Safe)
+        await _printSemaphore.WaitAsync();
+        try
         {
-            var tcs = new TaskCompletionSource<bool>();
-
-            // Declaramos el manejador para saber cuándo finaliza la carga del HTML en WebView
-            EventHandler<WebNavigatedEventArgs>? handler = null;
-            handler = (sender, e) =>
+            await MainThread.InvokeOnMainThreadAsync(async () =>
             {
-                _webView.Navigated -= handler;
-                tcs.SetResult(true);
-            };
-            
-            _webView.Navigated += handler;
+                var tcs = new TaskCompletionSource<bool>();
 
-            // Asignamos el código HTML al origen de datos del WebView
-            _webView.Source = new HtmlWebViewSource { Html = htmlContent };
-
-            // Esperamos a que finalice la carga
-            await tcs.Task;
-
-            // Margen de delay adicional para que WebView2 renderice fuentes externas (Google Fonts) y aplique CSS
-            await Task.Delay(500);
-
-            // Invocamos la API nativa de impresión off-screen de Windows WebView2
-#if WINDOWS
-            if (_webView.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.WebView2 nativeWebView)
-            {
-                // Aseguramos que el motor CoreWebView2 esté inicializado
-                await nativeWebView.EnsureCoreWebView2Async();
+                // Declaramos el manejador para saber cuándo finaliza la carga del HTML en WebView
+                EventHandler<WebNavigatedEventArgs>? handler = null;
+                handler = (sender, e) =>
+                {
+                    _webView.Navigated -= handler;
+                    tcs.SetResult(true);
+                };
                 
-                var coreWebView2 = nativeWebView.CoreWebView2;
-                if (coreWebView2 == null)
-                {
-                    throw new InvalidOperationException("El motor CoreWebView2 nativo no pudo inicializarse.");
-                }
+                _webView.Navigated += handler;
 
-                // Configuración de impresión nativa a PDF
-                var printSettings = coreWebView2.Environment.CreatePrintSettings();
-                printSettings.ShouldPrintBackgrounds = true; // Mantiene la estética de fondo y tarjetas CSS
-                printSettings.HeaderTitle = string.Empty;
-                printSettings.FooterUri = string.Empty;
-                printSettings.MarginTop = 0.4; // 1 cm aprox
-                printSettings.MarginBottom = 0.4;
-                printSettings.MarginLeft = 0.4;
-                printSettings.MarginRight = 0.4;
+                // Asignamos el código HTML al origen de datos del WebView
+                _webView.Source = new HtmlWebViewSource { Html = htmlContent };
 
-                // Asegurar que la carpeta de destino exista
-                var directory = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
+                // Esperamos a que finalice la carga
+                await tcs.Task;
 
-                // Generación nativa del archivo PDF
-                bool success = await coreWebView2.PrintToPdfAsync(outputPath, printSettings);
-                if (!success || !File.Exists(outputPath) || new FileInfo(outputPath).Length == 0)
+                // Margen de delay adicional para que WebView2 renderice fuentes externas (Google Fonts) y aplique CSS
+                await Task.Delay(500);
+
+                // Invocamos la API nativa de impresión off-screen de Windows WebView2
+#if WINDOWS
+                if (_webView.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.WebView2 nativeWebView)
                 {
-                    throw new FileNotFoundException("La generación del PDF nativo falló en el motor WebView2 o el archivo resultante está vacío.");
+                    // Aseguramos que el motor CoreWebView2 esté inicializado
+                    await nativeWebView.EnsureCoreWebView2Async();
+                    
+                    var coreWebView2 = nativeWebView.CoreWebView2;
+                    if (coreWebView2 == null)
+                    {
+                        throw new InvalidOperationException("El motor CoreWebView2 nativo no pudo inicializarse.");
+                    }
+
+                    // Configuración de impresión nativa a PDF
+                    var printSettings = coreWebView2.Environment.CreatePrintSettings();
+                    printSettings.ShouldPrintBackgrounds = true; // Mantiene la estética de fondo y tarjetas CSS
+                    printSettings.HeaderTitle = string.Empty;
+                    printSettings.FooterUri = string.Empty;
+                    printSettings.MarginTop = 0.4; // 1 cm aprox
+                    printSettings.MarginBottom = 0.4;
+                    printSettings.MarginLeft = 0.4;
+                    printSettings.MarginRight = 0.4;
+
+                    // Asegurar que la carpeta de destino exista
+                    var directory = Path.GetDirectoryName(outputPath);
+                    if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                    {
+                        Directory.CreateDirectory(directory);
+                    }
+
+                    // Generación nativa del archivo PDF
+                    bool success = await coreWebView2.PrintToPdfAsync(outputPath, printSettings);
+                    if (!success || !File.Exists(outputPath) || new FileInfo(outputPath).Length == 0)
+                    {
+                        throw new FileNotFoundException("La generación del PDF nativo falló en el motor WebView2 o el archivo resultante está vacío.");
+                    }
                 }
-            }
-            else
-            {
-                throw new InvalidOperationException("El control PlatformView de Windows no es del tipo esperado WebView2.");
-            }
+                else
+                {
+                    throw new InvalidOperationException("El control PlatformView de Windows no es del tipo esperado WebView2.");
+                }
 #else
-            throw new PlatformNotSupportedException("La conversión nativa HTML a PDF vía WebView2 solo está implementada para Windows.");
+                throw new PlatformNotSupportedException("La conversión nativa HTML a PDF vía WebView2 solo está implementada para Windows.");
 #endif
-        });
+            });
+        }
+        finally
+        {
+            _printSemaphore.Release();
+        }
     }
 }
