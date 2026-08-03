@@ -9,6 +9,7 @@ using System.Linq;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
@@ -123,7 +124,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     partial void OnTestXmlPathChanged(string value) => ResetTestConsoleState();
-    partial void OnTestXsltPathChanged(string? value) => ResetTestConsoleState();
+    partial void OnTestXsltPathChanged(string value) => ResetTestConsoleState();
     partial void OnTestOutputPathChanged(string value) => ResetTestConsoleState();
 
     private void ResetTestConsoleState()
@@ -213,19 +214,50 @@ public partial class MainViewModel : ObservableObject, IDisposable
         StatusMessage = $"Reintentando procesar {error.FileName}...";
         try
         {
-            // Mover de vuelta a la raíz
+            // Mover de vuelta a la raíz y borrar del historial anterior
             await _invoiceProcessorService.RetryFailedInvoiceAsync(error.FileName);
             
             // Forzar el escaneo
             await _invoiceProcessorService.ProcessInvoicesAsync();
             
-            StatusMessage = $"Reintento finalizado para {error.FileName}.";
+            // Verificar si el archivo volvió a fallar
+            var config = await _configService.LoadConfigAsync();
+            if (config != null)
+            {
+                var errorFilePath = Path.Combine(config.SourceFolderPath, "Errores", error.FileName);
+                if (File.Exists(errorFilePath))
+                {
+                    // Volvió a fallar, obtener detalles
+                    var errorLogPath = errorFilePath + ".error.json";
+                    string details = "El XML contiene errores de estructura o XSLT.";
+                    if (File.Exists(errorLogPath))
+                    {
+                        try
+                        {
+                            var json = await File.ReadAllTextAsync(errorLogPath);
+                            var log = JsonSerializer.Deserialize<ErrorLog>(json);
+                            if (log != null)
+                            {
+                                details = log.ErrorMessage;
+                            }
+                        }
+                        catch {}
+                    }
+                    await ShowAlertAsync("Fallo al Reprocesar", $"No ha sido posible procesar '{error.FileName}' ya que contiene errores que debes revisar:\n\n{details}");
+                }
+                else
+                {
+                    StatusMessage = $"¡Reintento exitoso para {error.FileName}!";
+                }
+            }
+
             await LoadErrorsAsync();
             await RefreshDirectoryStatsAsync();
         }
         catch (Exception ex)
         {
             StatusMessage = $"Fallo al reintentar: {ex.Message}";
+            await ShowAlertAsync("Error de Reintento", $"Fallo al reprocesar '{error.FileName}': {ex.Message}");
         }
     }
 
@@ -235,7 +267,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         var selectedErrors = RecentErrors.Where(e => e.IsSelected).ToList();
         if (selectedErrors.Count == 0)
         {
-            StatusMessage = "No hay facturas seleccionadas para reprocesar.";
+            await ShowAlertAsync("Atención", "No hay facturas seleccionadas para reprocesar.");
             return;
         }
 
@@ -250,14 +282,52 @@ public partial class MainViewModel : ObservableObject, IDisposable
             // Forzar el escaneo inmediato de todos los archivos retribuidos
             await _invoiceProcessorService.ProcessInvoicesAsync();
 
-            StatusMessage = $"Reintento masivo completado para {selectedErrors.Count} facturas.";
+            // Verificar cuáles volvieron a fallar
+            var config = await _configService.LoadConfigAsync();
+            var failedAgain = new List<string>();
+            if (config != null)
+            {
+                foreach (var error in selectedErrors)
+                {
+                    var errorFilePath = Path.Combine(config.SourceFolderPath, "Errores", error.FileName);
+                    if (File.Exists(errorFilePath))
+                    {
+                        failedAgain.Add(error.FileName);
+                    }
+                }
+            }
+
+            if (failedAgain.Count > 0)
+            {
+                string list = string.Join("\n• ", failedAgain);
+                await ShowAlertAsync("Reprocesamiento Incompleto", 
+                    $"De las facturas reintentadas, las siguientes {failedAgain.Count} volvieron a fallar y requieren revisión:\n\n• {list}");
+            }
+            else
+            {
+                StatusMessage = $"Reintento masivo completado con éxito para {selectedErrors.Count} facturas.";
+            }
+
             await LoadErrorsAsync();
             await RefreshDirectoryStatsAsync();
         }
         catch (Exception ex)
         {
             StatusMessage = $"Error en reintento masivo: {ex.Message}";
+            await ShowAlertAsync("Error de Sistema", $"Fallo en reintento masivo: {ex.Message}");
         }
+    }
+
+    private async Task ShowAlertAsync(string title, string message)
+    {
+        await Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            var activePage = Application.Current?.Windows?[0]?.Page;
+            if (activePage != null)
+            {
+                await activePage.DisplayAlert(title, message, "Aceptar");
+            }
+        });
     }
 
     [RelayCommand]
@@ -532,6 +602,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             TestConsoleStatus = "ERROR";
             TestConsoleOutput = "❌ ERROR: Archivo XML de prueba no seleccionado o no encontrado.";
             IsTestConsoleSuccess = false;
+            await ShowAlertAsync("Archivo XML Requerido", "Debes seleccionar un archivo XML de prueba válido para poder realizar la transformación.");
             return;
         }
 
@@ -541,6 +612,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             TestConsoleStatus = "ERROR";
             TestConsoleOutput = "❌ ERROR: Carpeta o ruta de destino para el PDF no seleccionada.";
             IsTestConsoleSuccess = false;
+            await ShowAlertAsync("Ruta de Destino Requerida", "Debes seleccionar una ruta o carpeta de destino donde guardar el archivo PDF de prueba.");
             return;
         }
 
