@@ -84,6 +84,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private bool _isTestConsoleSuccess = false;
 
     [ObservableProperty]
+    private bool _isCustomPopupVisible = false;
+
+    [ObservableProperty]
+    private string _customPopupTitle = string.Empty;
+
+    [ObservableProperty]
+    private string _customPopupMessage = string.Empty;
+
+    [ObservableProperty]
+    private string _customPopupType = "INFO"; // SUCCESS, ERROR, INFO
+
+    [ObservableProperty]
     private bool _isBatchActive = false;
 
     [ObservableProperty]
@@ -243,11 +255,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
                         }
                         catch {}
                     }
-                    await ShowAlertAsync("Fallo al Reprocesar", $"No ha sido posible procesar '{error.FileName}' ya que contiene errores que debes revisar:\n\n{details}");
+                    await ShowAlertAsync("Fallo al Reprocesar", $"No ha sido posible procesar '{error.FileName}' ya que contiene errores que debes revisar:\n\n{details}", "ERROR");
                 }
                 else
                 {
                     StatusMessage = $"¡Reintento exitoso para {error.FileName}!";
+                    await ShowAlertAsync("Reprocesamiento Exitoso", $"El archivo '{error.FileName}' ha sido procesado correctamente y su PDF ha sido generado.", "SUCCESS");
                 }
             }
 
@@ -257,7 +270,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             StatusMessage = $"Fallo al reintentar: {ex.Message}";
-            await ShowAlertAsync("Error de Reintento", $"Fallo al reprocesar '{error.FileName}': {ex.Message}");
+            await ShowAlertAsync("Error de Reintento", $"Fallo al reprocesar '{error.FileName}': {ex.Message}", "ERROR");
         }
     }
 
@@ -267,7 +280,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         var selectedErrors = RecentErrors.Where(e => e.IsSelected).ToList();
         if (selectedErrors.Count == 0)
         {
-            await ShowAlertAsync("Atención", "No hay facturas seleccionadas para reprocesar.");
+            await ShowAlertAsync("Atención", "No hay facturas seleccionadas para reprocesar.", "INFO");
             return;
         }
 
@@ -301,11 +314,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
             {
                 string list = string.Join("\n• ", failedAgain);
                 await ShowAlertAsync("Reprocesamiento Incompleto", 
-                    $"De las facturas reintentadas, las siguientes {failedAgain.Count} volvieron a fallar y requieren revisión:\n\n• {list}");
+                    $"De las facturas reintentadas, las siguientes {failedAgain.Count} volvieron a fallar y requieren revisión:\n\n• {list}", "ERROR");
             }
             else
             {
                 StatusMessage = $"Reintento masivo completado con éxito para {selectedErrors.Count} facturas.";
+                await ShowAlertAsync("Reprocesamiento Masivo Exitoso", $"Todas las {selectedErrors.Count} facturas seleccionadas fueron procesadas y sus archivos PDF generados con éxito.", "SUCCESS");
             }
 
             await LoadErrorsAsync();
@@ -314,20 +328,31 @@ public partial class MainViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             StatusMessage = $"Error en reintento masivo: {ex.Message}";
-            await ShowAlertAsync("Error de Sistema", $"Fallo en reintento masivo: {ex.Message}");
+            await ShowAlertAsync("Error de Sistema", $"Fallo en reintento masivo: {ex.Message}", "ERROR");
         }
     }
 
-    private async Task ShowAlertAsync(string title, string message)
+    [RelayCommand]
+    private void CloseCustomPopup()
     {
-        await Microsoft.Maui.ApplicationModel.MainThread.InvokeOnMainThreadAsync(async () =>
+        IsCustomPopupVisible = false;
+    }
+
+    public void ShowNotification(string title, string message, string type = "INFO")
+    {
+        Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
         {
-            var activePage = Application.Current?.Windows?[0]?.Page;
-            if (activePage != null)
-            {
-                await activePage.DisplayAlert(title, message, "Aceptar");
-            }
+            CustomPopupTitle = title;
+            CustomPopupMessage = message;
+            CustomPopupType = type.ToUpper();
+            IsCustomPopupVisible = true;
         });
+    }
+
+    private Task ShowAlertAsync(string title, string message, string type = "INFO")
+    {
+        ShowNotification(title, message, type);
+        return Task.CompletedTask;
     }
 
     [RelayCommand]

@@ -1051,6 +1051,89 @@
                 <Label Text="{Binding StatusMessage}" FontSize="11" TextColor="#94A3B8" FontAttributes="Italic" VerticalOptions="Center"/>
             </Border>
         </Grid>
+
+        <!-- ================= CUSTOM MODAL POPUP (SUCCESS / ERROR / INFO) ================= -->
+        <Grid Grid.Column="0" Grid.ColumnSpan="2" BackgroundColor="#B3000000" IsVisible="{Binding IsCustomPopupVisible}" InputTransparent="False" CascadeInputTransparent="False">
+            <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderColor}" StrokeThickness="1.5" StrokeShape="RoundRectangle 16" WidthRequest="420" HeightRequest="280" HorizontalOptions="Center" VerticalOptions="Center" Padding="25">
+                <Grid RowDefinitions="Auto, *, Auto" RowSpacing="15">
+                    <!-- Icono Superior y Título -->
+                    <VerticalStackLayout Grid.Row="0" Spacing="10" HorizontalOptions="Center">
+                        <!-- Icono Condicional según el tipo -->
+                        <Grid WidthRequest="48" HeightRequest="48" HorizontalOptions="Center">
+                            <!-- Tipo: SUCCESS (Verde Esmeralda) -->
+                            <Border x:Name="SuccessIconBorder" BackgroundColor="#2010B981" StrokeThickness="0" StrokeShape="RoundRectangle 24" Padding="12" IsVisible="False">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding CustomPopupType}" Value="SUCCESS">
+                                        <Setter Property="IsVisible" Value="True"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Path Data="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" Fill="#10B981" Aspect="Uniform"/>
+                            </Border>
+                            <!-- Tipo: ERROR (Rojo Carmesí) -->
+                            <Border x:Name="ErrorIconBorder" BackgroundColor="#20EF4444" StrokeThickness="0" StrokeShape="RoundRectangle 24" Padding="12" IsVisible="False">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding CustomPopupType}" Value="ERROR">
+                                        <Setter Property="IsVisible" Value="True"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" Fill="#EF4444" Aspect="Uniform"/>
+                            </Border>
+                            <!-- Tipo: INFO (Ámbar) -->
+                            <Border x:Name="InfoIconBorder" BackgroundColor="#20F59E0B" StrokeThickness="0" StrokeShape="RoundRectangle 24" Padding="12" IsVisible="False">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding CustomPopupType}" Value="INFO">
+                                        <Setter Property="IsVisible" Value="True"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" Fill="#F59E0B" Aspect="Uniform"/>
+                            </Border>
+                        </Grid>
+                        
+                        <Label Text="{Binding CustomPopupTitle}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
+                    </VerticalStackLayout>
+
+                    <!-- Mensaje del Popup -->
+                    <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+                        <Label Text="{Binding CustomPopupMessage}" FontSize="13" TextColor="{DynamicResource SecondaryText}" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" VerticalOptions="Center"/>
+                    </ScrollView>
+
+                    <!-- Botón Centrado y Estilizado -->
+                    <Border Grid.Row="2" StrokeThickness="0" StrokeShape="RoundRectangle 8" WidthRequest="150" HeightRequest="40" HorizontalOptions="Center" BackgroundColor="#3B82F6">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding CustomPopupType}" Value="SUCCESS">
+                                <Setter Property="BackgroundColor" Value="#10B981"/>
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border" Binding="{Binding CustomPopupType}" Value="ERROR">
+                                <Setter Property="BackgroundColor" Value="#EF4444"/>
+                            </DataTrigger>
+                            <DataTrigger TargetType="Border" Binding="{Binding CustomPopupType}" Value="INFO">
+                                <Setter Property="BackgroundColor" Value="#F59E0B"/>
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding CloseCustomPopupCommand}"/>
+                        </Border.GestureRecognizers>
+                        <Border.VisualStateManager.VisualStateGroups>
+                            <VisualStateGroupList>
+                                <VisualStateGroup Name="CommonStates">
+                                    <VisualState Name="Normal">
+                                        <VisualState.Setters>
+                                            <Setter Property="BackgroundColor" Value="#3B82F6"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Property="BackgroundColor" Value="#2563EB"/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateGroupList>
+                        </Border.VisualStateManager.VisualStateGroups>
+                        <Label Text="Entendido" TextColor="White" FontSize="13" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 
 </ContentPage>
