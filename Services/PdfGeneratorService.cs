@@ -185,7 +185,7 @@ public class PdfGeneratorService : IPdfGeneratorService
                 await tcs.Task;
 
                 // Margen de delay adicional para que WebView2 renderice fuentes externas (Google Fonts) y aplique CSS
-                await Task.Delay(500);
+                await Task.Delay(100);
 
                 // Invocamos la API nativa de impresión off-screen de Windows WebView2
 #if WINDOWS

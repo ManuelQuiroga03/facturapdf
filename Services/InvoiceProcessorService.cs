@@ -148,8 +148,18 @@ public class InvoiceProcessorService : IInvoiceProcessorService
             // Generar PDF usando el motor WebView2
             await _pdfGeneratorService.GeneratePdfAsync(xmlContent, config.CustomXsltPath, pdfOutputPath);
 
-            // Mover el XML original a la carpeta de Procesados de forma segura (sincronizada localmente)
-            var destPath = Path.Combine(processedDir, fileName);
+            // Mover el XML original a la carpeta de destino correspondiente (junto al PDF si está activo)
+            string destPath;
+            if (config.OrganizeOutputByFolder)
+            {
+                var targetDirectory = Path.GetDirectoryName(pdfOutputPath) ?? processedDir;
+                destPath = Path.Combine(targetDirectory, fileName);
+            }
+            else
+            {
+                destPath = Path.Combine(processedDir, fileName);
+            }
+
             lock (this)
             {
                 if (File.Exists(filePath))

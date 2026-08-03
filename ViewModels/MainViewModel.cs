@@ -813,6 +813,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
         try
         {
             var xmlPath = Path.Combine(Config.SourceFolderPath, "Procesados", invoice.FileName);
+            if (!File.Exists(xmlPath))
+            {
+                var pdfDir = Path.GetDirectoryName(invoice.PdfPath);
+                if (!string.IsNullOrEmpty(pdfDir))
+                {
+                    xmlPath = Path.Combine(pdfDir, invoice.FileName);
+                }
+            }
+
             if (File.Exists(xmlPath))
             {
                 await Launcher.Default.OpenAsync(new OpenFileRequest
@@ -822,7 +831,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             }
             else
             {
-                StatusMessage = $"El archivo XML no se encuentra en: {xmlPath}";
+                StatusMessage = $"El archivo XML no se encuentra en la carpeta Procesados ni junto al PDF.";
             }
         }
         catch (Exception ex)
@@ -886,6 +895,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
             foreach (var entry in successEntries)
             {
                 var xmlPath = Path.Combine(processedDir, entry.FileName);
+                if (!File.Exists(xmlPath))
+                {
+                    var pdfDir = Path.GetDirectoryName(entry.PdfPath);
+                    if (!string.IsNullOrEmpty(pdfDir))
+                    {
+                        xmlPath = Path.Combine(pdfDir, entry.FileName);
+                    }
+                }
                 bool isXmlAvailable = File.Exists(xmlPath);
                 bool isPdfAvailable = File.Exists(entry.PdfPath);
 
