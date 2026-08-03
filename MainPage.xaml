@@ -1054,8 +1054,8 @@
 
         <!-- ================= CUSTOM MODAL POPUP (SUCCESS / ERROR / INFO) ================= -->
         <Grid Grid.Column="0" Grid.ColumnSpan="2" BackgroundColor="#B3000000" IsVisible="{Binding IsCustomPopupVisible}" InputTransparent="False" CascadeInputTransparent="False">
-            <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderColor}" StrokeThickness="1.5" StrokeShape="RoundRectangle 16" WidthRequest="420" HeightRequest="280" HorizontalOptions="Center" VerticalOptions="Center" Padding="25">
-                <Grid RowDefinitions="Auto, *, Auto" RowSpacing="15">
+            <Border BackgroundColor="{DynamicResource CardBg}" Stroke="{DynamicResource BorderColor}" StrokeThickness="1.5" StrokeShape="RoundRectangle 16" WidthRequest="440" MaximumHeightRequest="480" HorizontalOptions="Center" VerticalOptions="Center" Padding="25">
+                <Grid RowDefinitions="Auto, Auto, Auto" RowSpacing="15">
                     <!-- Icono Superior y Título -->
                     <VerticalStackLayout Grid.Row="0" Spacing="10" HorizontalOptions="Center">
                         <!-- Icono Condicional según el tipo -->
@@ -1092,8 +1092,8 @@
                         <Label Text="{Binding CustomPopupTitle}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
                     </VerticalStackLayout>
 
-                    <!-- Mensaje del Popup -->
-                    <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+                    <!-- Mensaje del Popup con Altura Máxima y Scrollbar Inteligente -->
+                    <ScrollView Grid.Row="1" MaximumHeightRequest="220" VerticalScrollBarVisibility="Default" Margin="0, 5">
                         <Label Text="{Binding CustomPopupMessage}" FontSize="13" TextColor="{DynamicResource SecondaryText}" HorizontalTextAlignment="Center" LineBreakMode="WordWrap" VerticalOptions="Center"/>
                     </ScrollView>
 
