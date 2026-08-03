@@ -325,7 +325,7 @@
             </VerticalStackLayout>
         </Grid>
           <!-- ================= COLUMNA 1: CONTENIDO DERECHO ================= -->
-        <Grid Grid.Column="1" BackgroundColor="{DynamicResource PageBg}">
+        <Grid Grid.Column="1" ColumnDefinitions="*, Auto" BackgroundColor="{DynamicResource PageBg}">
             
             <!-- ================= SUB-PANEL A: DASHBOARD VIEW ================= -->
             <Grid IsVisible="{Binding IsDashboardViewActive}" RowDefinitions="Auto, Auto, Auto, Auto, *" Padding="25" RowSpacing="20">
@@ -346,7 +346,7 @@
                             <Grid ColumnDefinitions="Auto, *">
                                 <Path Grid.Column="0" Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
                                       Fill="{DynamicResource MutedText}" WidthRequest="14" HeightRequest="14" Aspect="Uniform" VerticalOptions="Center" Margin="0,0,10,0"/>
-                                <Entry Grid.Column="1" Placeholder="Buscar procesos..." TextColor="{DynamicResource PrimaryText}" PlaceholderColor="{DynamicResource MutedText}" FontSize="12" Margin="0" BackgroundColor="Transparent"/>
+                                <Entry Grid.Column="1" Placeholder="Buscar procesos..." Text="{Binding SearchQuery}" TextColor="{DynamicResource PrimaryText}" PlaceholderColor="{DynamicResource MutedText}" FontSize="12" Margin="0" BackgroundColor="Transparent"/>
                             </Grid>
                         </Border>
                         <!-- Botón de Alternancia de Tema (Claro / Oscuro) -->
@@ -546,7 +546,7 @@
                         </Grid>
 
                         <!-- Items Procesados -->
-                        <CollectionView Grid.Row="2" ItemsSource="{Binding ProcessingHistory}">
+                        <CollectionView Grid.Row="2" ItemsSource="{Binding ProcessingHistory}" SelectedItem="{Binding SelectedInvoice}" SelectionMode="Single">
                             <CollectionView.EmptyView>
                                 <VerticalStackLayout Padding="40" HorizontalOptions="Center" VerticalOptions="Center" Spacing="10">
                                     <Path Data="M19 20H5V8H19M19 6H12L10 4H5A2 2 0 0 0 3 6V20A2 2 0 0 0 5 22H19A2 2 0 0 0 21 20V8A2 2 0 0 0 21 6Z" 
@@ -627,7 +627,7 @@
                         <Grid ColumnDefinitions="Auto, *">
                             <Path Grid.Column="0" Data="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
                                   Fill="{DynamicResource MutedText}" WidthRequest="14" HeightRequest="14" Aspect="Uniform" VerticalOptions="Center" Margin="0,0,10,0"/>
-                            <Entry Grid.Column="1" Placeholder="Buscar eventos, errores o archivos..." TextColor="{DynamicResource PrimaryText}" PlaceholderColor="{DynamicResource MutedText}" FontSize="12" Margin="0" BackgroundColor="Transparent"/>
+                            <Entry Grid.Column="1" Placeholder="Buscar eventos, errores o archivos..." Text="{Binding SearchQuery}" TextColor="{DynamicResource PrimaryText}" PlaceholderColor="{DynamicResource MutedText}" FontSize="12" Margin="0" BackgroundColor="Transparent"/>
                         </Grid>
                     </Border>
                 </Grid>
@@ -1049,6 +1049,32 @@
             <!-- ================= BARRA DE ESTADO INFERIOR GLOBAL ================= -->
             <Border StrokeThickness="0" BackgroundColor="{DynamicResource SidebarBg}" Padding="20, 8" HeightRequest="35" VerticalOptions="End">
                 <Label Text="{Binding StatusMessage}" FontSize="11" TextColor="#94A3B8" FontAttributes="Italic" VerticalOptions="Center"/>
+            </Border>
+
+            <!-- ================= PANEL DERECHO: VISOR DE PDF EMBEBIDO ================= -->
+            <BoxView Grid.Column="1" WidthRequest="1" Color="{DynamicResource BorderColor}" HorizontalOptions="Start" IsVisible="{Binding IsPdfViewerVisible}" Margin="0"/>
+            <Border Grid.Column="1" WidthRequest="459" BackgroundColor="{DynamicResource SidebarBg}" StrokeThickness="0" IsVisible="{Binding IsPdfViewerVisible}" Padding="0" Margin="1,0,0,0">
+                <Grid RowDefinitions="Auto, *, Auto" Padding="20" RowSpacing="15">
+                    <!-- Cabecera del Visor -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="VISTA PREVIA" FontSize="9" TextColor="#10B981" FontAttributes="Bold"/>
+                            <Label Text="{Binding SelectedInvoice.FileName}" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}" LineBreakMode="TailTruncation"/>
+                        </VerticalStackLayout>
+                        <Button Grid.Column="1" Text="✕" FontSize="12" HeightRequest="32" WidthRequest="32" Padding="0" BackgroundColor="#1E293B" TextColor="{DynamicResource PrimaryText}" CornerRadius="16" Command="{Binding ClosePdfViewerCommand}"/>
+                    </Grid>
+
+                    <!-- Lector Web del PDF -->
+                    <Border Grid.Row="1" StrokeThickness="1" Stroke="{DynamicResource BorderColor}" StrokeShape="RoundRectangle 8" BackgroundColor="#0D1117">
+                        <WebView Source="{Binding SelectedPdfUrl}"/>
+                    </Border>
+
+                    <!-- Acciones Inferiores -->
+                    <Grid Grid.Row="2" ColumnDefinitions="*, *" ColumnSpacing="10">
+                        <Button Grid.Column="0" Text="Abrir Externamente" BackgroundColor="#1E293B" TextColor="White" FontSize="11" CornerRadius="8" Command="{Binding OpenPdfCommand}" CommandParameter="{Binding SelectedInvoice}"/>
+                        <Button Grid.Column="1" Text="Cerrar Vista" BackgroundColor="#EF4444" TextColor="White" FontSize="11" CornerRadius="8" Command="{Binding ClosePdfViewerCommand}"/>
+                    </Grid>
+                </Grid>
             </Border>
         </Grid>
 

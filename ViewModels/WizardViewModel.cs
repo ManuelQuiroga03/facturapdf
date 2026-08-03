@@ -39,6 +39,9 @@ public partial class WizardViewModel : ObservableObject
     private string _logoPath = string.Empty;
 
     [ObservableProperty]
+    private bool _organizeOutputByFolder = false;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsTemplateModePredeterminada))]
     [NotifyPropertyChangedFor(nameof(IsTemplateModeGlobal))]
     [NotifyPropertyChangedFor(nameof(IsTemplateModeSpecific))]
@@ -404,7 +407,8 @@ public partial class WizardViewModel : ObservableObject
                 finalXsltCartaPorte,
                 finalXsltPago,
                 finalXsltNomina,
-                finalXsltComercioExterior
+                finalXsltComercioExterior,
+                OrganizeOutputByFolder
             );
 
             // Guardamos la configuración y encriptamos la contraseña de forma segura

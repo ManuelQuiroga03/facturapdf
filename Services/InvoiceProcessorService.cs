@@ -118,7 +118,7 @@ public class InvoiceProcessorService : IInvoiceProcessorService
     {
         var fileName = Path.GetFileName(filePath);
         var pdfFileName = Path.ChangeExtension(fileName, ".pdf");
-        var pdfOutputPath = Path.Combine(config.OutputFolderPath, pdfFileName);
+        string pdfOutputPath = string.Empty;
 
         long fileSize = 0;
         try
@@ -134,6 +134,16 @@ public class InvoiceProcessorService : IInvoiceProcessorService
                 }
             }
             catch { }
+
+            // Resolver ruta final del PDF (plana o jerárquica)
+            if (config.OrganizeOutputByFolder)
+            {
+                pdfOutputPath = GetStructuredOutputPath(xmlContent, config.OutputFolderPath, pdfFileName);
+            }
+            else
+            {
+                pdfOutputPath = Path.Combine(config.OutputFolderPath, pdfFileName);
+            }
 
             // Generar PDF usando el motor WebView2
             await _pdfGeneratorService.GeneratePdfAsync(xmlContent, config.CustomXsltPath, pdfOutputPath);
@@ -297,6 +307,17 @@ public class InvoiceProcessorService : IInvoiceProcessorService
             // 1. Eliminar el PDF correspondiente si ya existe en la salida, para forzar su regeneración
             var pdfFileName = Path.ChangeExtension(fileName, ".pdf");
             var pdfOutputPath = Path.Combine(config.OutputFolderPath, pdfFileName);
+            
+            if (config.OrganizeOutputByFolder)
+            {
+                try
+                {
+                    string xmlContent = await File.ReadAllTextAsync(sourcePath);
+                    pdfOutputPath = GetStructuredOutputPath(xmlContent, config.OutputFolderPath, pdfFileName);
+                }
+                catch { }
+            }
+
             if (File.Exists(pdfOutputPath))
             {
                 try
@@ -323,5 +344,61 @@ public class InvoiceProcessorService : IInvoiceProcessorService
             // 4. Limpiar la entrada anterior de error en la bitácora histórica
             await _historyService.RemoveEntryAsync(fileName);
         }
+    }
+
+    /// <summary>
+    /// Resuelve y crea la ruta física del PDF basada en Año, Mes y Tipo de Comprobante.
+    /// </summary>
+    private string GetStructuredOutputPath(string xmlContent, string outputRootPath, string pdfFileName)
+    {
+        string year = DateTime.Now.Year.ToString();
+        string monthName = DateTime.Now.ToString("MMMM", new System.Globalization.CultureInfo("es-ES"));
+        monthName = char.ToUpper(monthName[0]) + monthName.Substring(1);
+        string month = $"{DateTime.Now.Month:00} - {monthName}";
+        string typeDir = "Otros";
+
+        try
+        {
+            var xmlDoc = new System.Xml.XmlDocument();
+            xmlDoc.LoadXml(xmlContent);
+            
+            var nsManager = new System.Xml.XmlNamespaceManager(xmlDoc.NameTable);
+            nsManager.AddNamespace("cfdi", "http://www.sat.gob.mx/cfd/4");
+            nsManager.AddNamespace("cfdi3", "http://www.sat.gob.mx/cfd/3");
+
+            var root = xmlDoc.DocumentElement;
+            if (root != null)
+            {
+                // Intentar leer la Fecha
+                string fechaAttr = root.GetAttribute("Fecha");
+                if (!string.IsNullOrEmpty(fechaAttr) && DateTime.TryParse(fechaAttr, out DateTime date))
+                {
+                    year = date.Year.ToString();
+                    string mName = date.ToString("MMMM", new System.Globalization.CultureInfo("es-ES"));
+                    mName = char.ToUpper(mName[0]) + mName.Substring(1);
+                    month = $"{date.Month:00} - {mName}";
+                }
+
+                // Intentar leer el Tipo de Comprobante
+                string tipoAttr = root.GetAttribute("TipoDeComprobante");
+                typeDir = tipoAttr switch
+                {
+                    "I" => "Ingresos",
+                    "E" => "Egresos",
+                    "P" => "Pagos",
+                    "N" => "Nominas",
+                    "T" => "Traslados",
+                    _ => "Otros"
+                };
+            }
+        }
+        catch
+        {
+            // Fallback silencioso si no se puede parsear
+        }
+
+        var targetDir = Path.Combine(outputRootPath, year, month, typeDir);
+        Directory.CreateDirectory(targetDir);
+        return Path.Combine(targetDir, pdfFileName);
     }
 }

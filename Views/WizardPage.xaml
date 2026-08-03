@@ -169,6 +169,13 @@
                                         Padding="15,0"/>
                             </Grid>
                         </VerticalStackLayout>
+
+                        <!-- Configuración adicional: Organizar por subcarpetas -->
+                        <HorizontalStackLayout Spacing="8" Margin="0, 5, 0, 0" VerticalOptions="Center">
+                            <CheckBox IsChecked="{Binding OrganizeOutputByFolder}" Color="#52B788" VerticalOptions="Center"/>
+                            <Label Text="Organizar PDFs automáticamente en subcarpetas (Año \ Mes \ Tipo)" 
+                                   TextColor="#C9D1D9" FontSize="13" FontAttributes="Bold" VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
                     </VerticalStackLayout>
 
                     <!-- ================= PASO 3: CONFIGURACIÓN DE PLANTILLAS PDF ================= -->

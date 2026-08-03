@@ -109,6 +109,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private double _batchProgress = 0.0;
 
+    [ObservableProperty]
+    private string _searchQuery = string.Empty;
+
+    [ObservableProperty]
+    private ProcessedInvoice? _selectedInvoice;
+
+    [ObservableProperty]
+    private string? _selectedPdfUrl;
+
+    [ObservableProperty]
+    private bool _isPdfViewerVisible = false;
+
     public string BatchProgressText => $"{BatchProcessedCount} de {BatchTotalCount} procesados";
 
     public ObservableCollection<ProcessedInvoice> ProcessingHistory { get; } = new();
@@ -138,6 +150,38 @@ public partial class MainViewModel : ObservableObject, IDisposable
     partial void OnTestXmlPathChanged(string value) => ResetTestConsoleState();
     partial void OnTestXsltPathChanged(string value) => ResetTestConsoleState();
     partial void OnTestOutputPathChanged(string value) => ResetTestConsoleState();
+
+    partial void OnSearchQueryChanged(string value)
+    {
+        Task.Run(async () =>
+        {
+            await LoadErrorsAsync();
+            await RefreshDirectoryStatsAsync();
+        });
+    }
+
+    partial void OnSelectedInvoiceChanged(ProcessedInvoice? value)
+    {
+        if (value != null && File.Exists(value.PdfPath))
+        {
+            var uri = new Uri(value.PdfPath);
+            SelectedPdfUrl = uri.AbsoluteUri;
+            IsPdfViewerVisible = true;
+        }
+        else
+        {
+            SelectedPdfUrl = null;
+            IsPdfViewerVisible = false;
+        }
+    }
+
+    [RelayCommand]
+    private void ClosePdfViewer()
+    {
+        SelectedInvoice = null;
+        IsPdfViewerVisible = false;
+        SelectedPdfUrl = null;
+    }
 
     private void ResetTestConsoleState()
     {
@@ -427,6 +471,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         var errors = await _invoiceProcessorService.GetRecentErrorsAsync();
         
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            var query = SearchQuery.Trim().ToLower();
+            errors = errors.Where(e => 
+                (e.FileName != null && e.FileName.ToLower().Contains(query)) || 
+                (e.ErrorMessage != null && e.ErrorMessage.ToLower().Contains(query))
+            ).ToList();
+        }
+
         // Ejecutamos en el hilo principal para actualizar la colección reactiva
         Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
         {
@@ -819,7 +872,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
             }
 
             var processedUIList = new List<ProcessedInvoice>();
-            foreach (var entry in dbHistory.Where(e => e.Status == "Success"))
+            var successEntries = dbHistory.Where(e => e.Status == "Success");
+
+            if (!string.IsNullOrWhiteSpace(SearchQuery))
+            {
+                var query = SearchQuery.Trim().ToLower();
+                successEntries = successEntries.Where(e => 
+                    (e.FileName != null && e.FileName.ToLower().Contains(query)) ||
+                    (e.PdfPath != null && e.PdfPath.ToLower().Contains(query))
+                );
+            }
+
+            foreach (var entry in successEntries)
             {
                 var xmlPath = Path.Combine(processedDir, entry.FileName);
                 bool isXmlAvailable = File.Exists(xmlPath);

@@ -25,6 +25,7 @@ public class ConfigurationService : IConfigurationService
     private const string KeyXsltPago = "XsltPagoPath";
     private const string KeyXsltNomina = "XsltNominaPath";
     private const string KeyXsltComercioExterior = "XsltComercioExteriorPath";
+    private const string KeyOrganizeOutput = "OrganizeOutputByFolder";
 
     /// <inheritdoc />
     public Task<AppConfig?> LoadConfigAsync()
@@ -43,6 +44,7 @@ public class ConfigurationService : IConfigurationService
             var xsltPago = Preferences.Default.Get<string?>(KeyXsltPago, null) ?? string.Empty;
             var xsltNomina = Preferences.Default.Get<string?>(KeyXsltNomina, null) ?? string.Empty;
             var xsltComercioExterior = Preferences.Default.Get<string?>(KeyXsltComercioExterior, null) ?? string.Empty;
+            var organizeOutput = Preferences.Default.Get<bool>(KeyOrganizeOutput, false);
 
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(sourceFolder) || string.IsNullOrEmpty(outputFolder))
             {
@@ -61,7 +63,8 @@ public class ConfigurationService : IConfigurationService
                 xsltCartaPorte,
                 xsltPago,
                 xsltNomina,
-                xsltComercioExterior
+                xsltComercioExterior,
+                organizeOutput
             ));
         }
         catch (Exception)
@@ -86,6 +89,7 @@ public class ConfigurationService : IConfigurationService
         Preferences.Default.Set(KeyXsltPago, config.XsltPagoPath);
         Preferences.Default.Set(KeyXsltNomina, config.XsltNominaPath);
         Preferences.Default.Set(KeyXsltComercioExterior, config.XsltComercioExteriorPath);
+        Preferences.Default.Set(KeyOrganizeOutput, config.OrganizeOutputByFolder);
 
         if (!string.IsNullOrEmpty(password))
         {
@@ -131,6 +135,7 @@ public class ConfigurationService : IConfigurationService
         Preferences.Default.Remove(KeyXsltPago);
         Preferences.Default.Remove(KeyXsltNomina);
         Preferences.Default.Remove(KeyXsltComercioExterior);
+        Preferences.Default.Remove(KeyOrganizeOutput);
 
         SecureStorage.Default.Remove(KeySecurePassword);
         await Task.CompletedTask;

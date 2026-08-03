@@ -17,5 +17,6 @@ public record AppConfig(
     string XsltCartaPortePath,
     string XsltPagoPath,
     string XsltNominaPath,
-    string XsltComercioExteriorPath
+    string XsltComercioExteriorPath,
+    bool OrganizeOutputByFolder
 );
