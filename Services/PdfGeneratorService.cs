@@ -214,7 +214,11 @@ public class PdfGeneratorService : IPdfGeneratorService
                 }
 
                 // Generación nativa del archivo PDF
-                await coreWebView2.PrintToPdfAsync(outputPath, printSettings);
+                bool success = await coreWebView2.PrintToPdfAsync(outputPath, printSettings);
+                if (!success || !File.Exists(outputPath) || new FileInfo(outputPath).Length == 0)
+                {
+                    throw new FileNotFoundException("La generación del PDF nativo falló en el motor WebView2 o el archivo resultante está vacío.");
+                }
             }
             else
             {

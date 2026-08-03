@@ -12,4 +12,7 @@ public record ErrorLog(
     string ErrorMessage,
     string ExceptionType,
     string XsltApplied
-);
+)
+{
+    public bool IsSelected { get; set; }
+}

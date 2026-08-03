@@ -85,6 +85,22 @@ public class InvoiceHistoryService : IInvoiceHistoryService
         }
     }
 
+    /// <inheritdoc />
+    public async Task RemoveEntryAsync(string fileName)
+    {
+        await _semaphore.WaitAsync();
+        try
+        {
+            var history = await LoadHistoryInternalAsync();
+            history.RemoveAll(e => e.FileName == fileName);
+            await SaveHistoryInternalAsync(history);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
     /// <summary>
     /// Carga el historial desde el archivo local sin bloqueos de concurrencia externos.
     /// </summary>

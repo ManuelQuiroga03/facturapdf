@@ -285,20 +285,34 @@ public class InvoiceProcessorService : IInvoiceProcessorService
 
         if (File.Exists(sourcePath))
         {
-            // Mover el XML fallido de vuelta a la raíz de entrada para su reprocesamiento
+            // 1. Eliminar el PDF correspondiente si ya existe en la salida, para forzar su regeneración
+            var pdfFileName = Path.ChangeExtension(fileName, ".pdf");
+            var pdfOutputPath = Path.Combine(config.OutputFolderPath, pdfFileName);
+            if (File.Exists(pdfOutputPath))
+            {
+                try
+                {
+                    File.Delete(pdfOutputPath);
+                }
+                catch { }
+            }
+
+            // 2. Mover el XML fallido de vuelta a la raíz de entrada para su reprocesamiento
             if (File.Exists(destPath))
             {
                 File.Delete(destPath);
             }
             File.Move(sourcePath, destPath);
 
-            // Eliminar el archivo de log JSON asociado
+            // 3. Eliminar el archivo de log JSON asociado
             var jsonPath = sourcePath + ".error.json";
             if (File.Exists(jsonPath))
             {
                 File.Delete(jsonPath);
             }
+
+            // 4. Limpiar la entrada anterior de error en la bitácora histórica
+            await _historyService.RemoveEntryAsync(fileName);
         }
-        await Task.CompletedTask;
     }
 }

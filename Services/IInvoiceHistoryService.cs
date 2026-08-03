@@ -29,4 +29,9 @@ public interface IInvoiceHistoryService
     /// Limpia completamente el historial de por vida.
     /// </summary>
     Task ClearHistoryAsync();
+
+    /// <summary>
+    /// Remueve un registro del historial persistente por su nombre de archivo.
+    /// </summary>
+    Task RemoveEntryAsync(string fileName);
 }

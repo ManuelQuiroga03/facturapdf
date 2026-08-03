@@ -735,9 +735,46 @@
                 <!-- Row 3: Listado de Errores y Logs Recientes (Card Principal) -->
                 <Grid Grid.Row="3">
                     <Border Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="20">
-                        <Grid RowDefinitions="Auto, *, Auto" RowSpacing="12">
+                        <Grid RowDefinitions="Auto, Auto, *, Auto" RowSpacing="12">
+                            <!-- Cabecera de la Tabla con Botón de Acción Masiva -->
+                            <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="0, 0, 0, 5">
+                                <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
+                                    <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" 
+                                          Fill="#EF4444" WidthRequest="16" HeightRequest="16" Aspect="Uniform" VerticalOptions="Center"/>
+                                    <Label Text="Logs de Errores Recientes" FontSize="15" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                                
+                                <!-- Botón de Reprocesar Lote Seleccionado -->
+                                <Border Grid.Column="1" StrokeThickness="0" StrokeShape="RoundRectangle 6" BackgroundColor="#F59E0B" Padding="15, 8" VerticalOptions="Center" ToolTipProperties.Text="Reprocesar todos los XMLs seleccionados de forma masiva">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding RetrySelectedErrorsCommand}"/>
+                                    </Border.GestureRecognizers>
+                                    <Border.VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroupList>
+                                            <VisualStateGroup Name="CommonStates">
+                                                <VisualState Name="Normal">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="BackgroundColor" Value="#F59E0B"/>
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState Name="PointerOver">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="BackgroundColor" Value="#D97706"/>
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                            </VisualStateGroup>
+                                        </VisualStateGroupList>
+                                    </Border.VisualStateManager.VisualStateGroups>
+                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                        <Path Data="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm-6 8c0-1.01.25-1.97.7-2.8L5.24 6.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3c-3.31 0-6-2.69-6-6z" 
+                                              Fill="White" WidthRequest="12" HeightRequest="12" Aspect="Uniform" VerticalOptions="Center"/>
+                                        <Label Text="Reprocesar Seleccionados" TextColor="White" FontSize="11" FontAttributes="Bold" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </Grid>
+
                             <!-- Cabeceras de Columna -->
-                            <Grid Grid.Row="0" ColumnDefinitions="40, 140, 90, 130, 180, *" Padding="10, 5" BackgroundColor="{DynamicResource PanelBg}">
+                            <Grid Grid.Row="1" ColumnDefinitions="40, 140, 90, 130, 180, *" Padding="10, 5" BackgroundColor="{DynamicResource PanelBg}">
                                 <Label Grid.Column="1" Text="FECHA / HORA" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
                                 <Label Grid.Column="2" Text="ID DE EVENTO" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
                                 <Label Grid.Column="3" Text="ESTADO" FontSize="10" TextColor="#64748B" FontAttributes="Bold" VerticalOptions="Center"/>
@@ -746,7 +783,7 @@
                             </Grid>
 
                             <!-- Items del Log de Errores -->
-                            <CollectionView Grid.Row="1" ItemsSource="{Binding RecentErrors}">
+                            <CollectionView Grid.Row="2" ItemsSource="{Binding RecentErrors}">
                                 <CollectionView.EmptyView>
                                     <VerticalStackLayout Padding="50" HorizontalOptions="Center" VerticalOptions="Center" Spacing="12">
                                         <!-- Icono Éxito Total Vectorial (Check) -->
@@ -763,7 +800,7 @@
                                         <Border StrokeThickness="0" BackgroundColor="{DynamicResource ErrorRowBg}" Margin="0" Padding="10, 10">
                                             <Grid ColumnDefinitions="40, 140, 90, 130, 180, *, Auto" ColumnSpacing="10" VerticalOptions="Center">
                                                 <!-- Checkbox -->
-                                                <CheckBox Grid.Column="0" IsChecked="False" Color="#3B82F6" VerticalOptions="Center" HorizontalOptions="Center" ToolTipProperties.Text="Seleccionar log para operaciones grupales"/>
+                                                <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" Color="#3B82F6" VerticalOptions="Center" HorizontalOptions="Center" ToolTipProperties.Text="Seleccionar log para operaciones grupales"/>
                                                 <!-- Timestamp -->
                                                 <Label Grid.Column="1" Text="{Binding Timestamp, StringFormat='{0:yyyy-MM-dd HH:mm:ss}'}" TextColor="#94A3B8" FontSize="11" VerticalOptions="Center"/>
                                                 <!-- Event ID Dinámico -->
@@ -803,11 +840,11 @@
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
-                                </CollectionView.ItemTemplate>
-                            </CollectionView>
+                                 </CollectionView.ItemTemplate>
+                             </CollectionView>
 
-                            <!-- Paginación Dinámica -->
-                            <Grid Grid.Row="2" ColumnDefinitions="*, Auto" Padding="0, 5, 0, 0">
+                             <!-- Paginación Dinámica -->
+                             <Grid Grid.Row="3" ColumnDefinitions="*, Auto" Padding="0, 5, 0, 0">
                                 <Label Grid.Column="0" Text="{Binding RecentErrors.Count, StringFormat='Mostrando {0} entradas de error activas'}" TextColor="#64748B" FontSize="12" VerticalOptions="Center"/>
                                 <HorizontalStackLayout Grid.Column="1" Spacing="15" VerticalOptions="Center">
                                     <Label Text="&lt;" TextColor="#64748B" FontSize="14" FontAttributes="Bold" VerticalOptions="Center"/>

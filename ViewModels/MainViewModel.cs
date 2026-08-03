@@ -218,6 +218,37 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private async Task RetrySelectedErrorsAsync()
+    {
+        var selectedErrors = RecentErrors.Where(e => e.IsSelected).ToList();
+        if (selectedErrors.Count == 0)
+        {
+            StatusMessage = "No hay facturas seleccionadas para reprocesar.";
+            return;
+        }
+
+        StatusMessage = $"Reintentando procesar {selectedErrors.Count} facturas seleccionadas...";
+        try
+        {
+            foreach (var error in selectedErrors)
+            {
+                await _invoiceProcessorService.RetryFailedInvoiceAsync(error.FileName);
+            }
+
+            // Forzar el escaneo inmediato de todos los archivos retribuidos
+            await _invoiceProcessorService.ProcessInvoicesAsync();
+
+            StatusMessage = $"Reintento masivo completado para {selectedErrors.Count} facturas.";
+            await LoadErrorsAsync();
+            await RefreshDirectoryStatsAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error en reintento masivo: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
     private void OpenFolder(string type)
     {
         if (Config == null) return;
