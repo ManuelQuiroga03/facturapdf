@@ -17,6 +17,7 @@ public class InvoiceProcessorService : IInvoiceProcessorService
     private readonly IConfigurationService _configService;
     private readonly IPdfGeneratorService _pdfGeneratorService;
     private readonly IInvoiceHistoryService _historyService;
+    private readonly System.Threading.SemaphoreSlim _processingSemaphore = new(1, 1);
 
     /// <inheritdoc />
     public event Action<string, string, bool>? InvoiceProcessed;
@@ -40,66 +41,74 @@ public class InvoiceProcessorService : IInvoiceProcessorService
     /// <inheritdoc />
     public async Task ProcessInvoicesAsync()
     {
-        var config = await _configService.LoadConfigAsync();
-        if (config == null) return;
-
-        // Validar que la carpeta de entrada exista
-        if (!Directory.Exists(config.SourceFolderPath))
+        await _processingSemaphore.WaitAsync();
+        try
         {
-            throw new DirectoryNotFoundException($"La carpeta de entrada no existe: {config.SourceFolderPath}");
-        }
+            var config = await _configService.LoadConfigAsync();
+            if (config == null) return;
 
-        // Crear las carpetas automatizadas internas
-        var processedDir = Path.Combine(config.SourceFolderPath, "Procesados");
-        var errorDir = Path.Combine(config.SourceFolderPath, "Errores");
-        Directory.CreateDirectory(processedDir);
-        Directory.CreateDirectory(errorDir);
-
-        // Obtener todos los archivos XML en el directorio raíz (evitando carpetas internas)
-        var xmlFiles = Directory.GetFiles(config.SourceFolderPath, "*.xml", SearchOption.TopDirectoryOnly);
-        
-        // Filtrar archivos que ya tienen su archivo PDF generado en la salida (evitar reprocesamientos innecesarios)
-        var filteredFiles = new List<string>();
-        foreach (var filePath in xmlFiles)
-        {
-            var fileName = Path.GetFileName(filePath);
-            var pdfFileName = Path.ChangeExtension(fileName, ".pdf");
-            var pdfOutputPath = Path.Combine(config.OutputFolderPath, pdfFileName);
-            if (!File.Exists(pdfOutputPath))
+            // Validar que la carpeta de entrada exista
+            if (!Directory.Exists(config.SourceFolderPath))
             {
-                filteredFiles.Add(filePath);
+                throw new DirectoryNotFoundException($"La carpeta de entrada no existe: {config.SourceFolderPath}");
             }
-        }
 
-        if (filteredFiles.Count == 0) return;
+            // Crear las carpetas automatizadas internas
+            var processedDir = Path.Combine(config.SourceFolderPath, "Procesados");
+            var errorDir = Path.Combine(config.SourceFolderPath, "Errores");
+            Directory.CreateDirectory(processedDir);
+            Directory.CreateDirectory(errorDir);
 
-        // Disparar inicio del lote con el conteo de archivos a procesar
-        BatchStarted?.Invoke(filteredFiles.Count);
-
-        var tasks = new List<Task>();
-        // SemaphoreSlim controlado a 4 hilos paralelos para no sobrecargar el renderizado WebView2
-        using var semaphore = new System.Threading.SemaphoreSlim(4, 4);
-
-        foreach (var filePath in filteredFiles)
-        {
-            tasks.Add(Task.Run(async () =>
+            // Obtener todos los archivos XML en el directorio raíz (evitando carpetas internas)
+            var xmlFiles = Directory.GetFiles(config.SourceFolderPath, "*.xml", SearchOption.TopDirectoryOnly);
+            
+            // Filtrar archivos que ya tienen su archivo PDF generado en la salida (evitar reprocesamientos innecesarios)
+            var filteredFiles = new List<string>();
+            foreach (var filePath in xmlFiles)
             {
-                await semaphore.WaitAsync();
-                try
+                var fileName = Path.GetFileName(filePath);
+                var pdfFileName = Path.ChangeExtension(fileName, ".pdf");
+                var pdfOutputPath = Path.Combine(config.OutputFolderPath, pdfFileName);
+                if (!File.Exists(pdfOutputPath))
                 {
-                    await ProcessSingleInvoiceWithRetryAsync(filePath, processedDir, errorDir, config);
+                    filteredFiles.Add(filePath);
                 }
-                finally
-                {
-                    semaphore.Release();
-                }
-            }));
-        }
+            }
 
-        await Task.WhenAll(tasks);
-        
-        // Disparar conclusión del lote
-        BatchCompleted?.Invoke();
+            if (filteredFiles.Count == 0) return;
+
+            // Disparar inicio del lote con el conteo de archivos a procesar
+            BatchStarted?.Invoke(filteredFiles.Count);
+
+            var tasks = new List<Task>();
+            // SemaphoreSlim controlado a 4 hilos paralelos para no sobrecargar el renderizado WebView2
+            using var semaphore = new System.Threading.SemaphoreSlim(4, 4);
+
+            foreach (var filePath in filteredFiles)
+            {
+                tasks.Add(Task.Run(async () =>
+                {
+                    await semaphore.WaitAsync();
+                    try
+                    {
+                        await ProcessSingleInvoiceWithRetryAsync(filePath, processedDir, errorDir, config);
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }));
+            }
+
+            await Task.WhenAll(tasks);
+            
+            // Disparar conclusión del lote
+            BatchCompleted?.Invoke();
+        }
+        finally
+        {
+            _processingSemaphore.Release();
+        }
     }
 
     /// <summary>
@@ -133,12 +142,12 @@ public class InvoiceProcessorService : IInvoiceProcessorService
             var destPath = Path.Combine(processedDir, fileName);
             lock (this)
             {
-                if (File.Exists(destPath))
-                {
-                    File.Delete(destPath);
-                }
                 if (File.Exists(filePath))
                 {
+                    if (File.Exists(destPath))
+                    {
+                        File.Delete(destPath);
+                    }
                     File.Move(filePath, destPath);
                 }
             }
@@ -172,12 +181,12 @@ public class InvoiceProcessorService : IInvoiceProcessorService
             var destPath = Path.Combine(errorDir, fileName);
             lock (this)
             {
-                if (File.Exists(destPath))
-                {
-                    File.Delete(destPath);
-                }
                 if (File.Exists(filePath))
                 {
+                    if (File.Exists(destPath))
+                    {
+                        File.Delete(destPath);
+                    }
                     File.Move(filePath, destPath);
                 }
             }
