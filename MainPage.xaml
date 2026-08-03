@@ -328,7 +328,7 @@
         <Grid Grid.Column="1" BackgroundColor="{DynamicResource PageBg}">
             
             <!-- ================= SUB-PANEL A: DASHBOARD VIEW ================= -->
-            <Grid IsVisible="{Binding IsDashboardViewActive}" RowDefinitions="Auto, Auto, Auto, *" Padding="25" RowSpacing="20">
+            <Grid IsVisible="{Binding IsDashboardViewActive}" RowDefinitions="Auto, Auto, Auto, Auto, *" Padding="25" RowSpacing="20">
                 
                 <!-- Row 0: Cabecera Superior del Dashboard -->
                 <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
@@ -499,8 +499,28 @@
                     </Border>
                 </Grid>
 
-                <!-- Row 3: Listado de Archivos Procesados (Card Principal) -->
-                <Border Grid.Row="3" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="20">
+                <!-- Row 3: Barra de Progreso Activo de Lotes (Visible solo cuando se procesa un lote) -->
+                <Border Grid.Row="3" Stroke="#10B981" StrokeThickness="1" BackgroundColor="#1010B981" StrokeShape="RoundRectangle 12" Padding="20, 15" IsVisible="{Binding IsBatchActive}" Margin="0, 5, 0, 5">
+                    <Grid RowDefinitions="Auto, Auto" RowSpacing="8">
+                        <!-- Textos de Progreso -->
+                        <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
+                            <HorizontalStackLayout Grid.Column="0" Spacing="8">
+                                <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" 
+                                      Fill="#10B981" WidthRequest="16" HeightRequest="16" Aspect="Uniform" VerticalOptions="Center"/>
+                                <Label Text="{Binding StatusMessage}" FontSize="13" FontAttributes="Bold" TextColor="#10B981" VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+                            <Label Grid.Column="1" Text="{Binding BatchProgressText}" FontSize="12" TextColor="#94A3B8" FontAttributes="Bold" VerticalOptions="Center"/>
+                        </Grid>
+                        <!-- Barra de Progreso y Porcentaje -->
+                        <Grid Grid.Row="1" ColumnDefinitions="*, Auto" ColumnSpacing="15">
+                            <ProgressBar Grid.Column="0" Progress="{Binding BatchProgress}" ProgressColor="#10B981" HeightRequest="6" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="{Binding BatchProgress, StringFormat='{0:P0}'}" FontSize="13" FontAttributes="Bold" TextColor="#10B981" VerticalOptions="Center"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- Row 4: Listado de Archivos Procesados (Card Principal) -->
+                <Border Grid.Row="4" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="20">
                     <Grid RowDefinitions="Auto, Auto, *, Auto" RowSpacing="12">
                         <!-- Cabecera de la Tabla -->
                         <Grid Grid.Row="0" ColumnDefinitions="*, Auto">

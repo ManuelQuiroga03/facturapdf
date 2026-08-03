@@ -18,6 +18,16 @@ public interface IInvoiceProcessorService
     event Action<string, string, bool>? InvoiceProcessed;
 
     /// <summary>
+    /// Evento que se dispara al iniciar un nuevo lote de procesamiento, indicando el número total de archivos XML a procesar.
+    /// </summary>
+    event Action<int>? BatchStarted;
+
+    /// <summary>
+    /// Evento que se dispara al concluir el lote de procesamiento completo.
+    /// </summary>
+    event Action? BatchCompleted;
+
+    /// <summary>
     /// Procesa de forma asíncrona todos los archivos XML pendientes en la carpeta de entrada configurada.
     /// </summary>
     Task ProcessInvoicesAsync();

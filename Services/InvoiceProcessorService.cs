@@ -21,6 +21,12 @@ public class InvoiceProcessorService : IInvoiceProcessorService
     /// <inheritdoc />
     public event Action<string, string, bool>? InvoiceProcessed;
 
+    /// <inheritdoc />
+    public event Action<int>? BatchStarted;
+
+    /// <inheritdoc />
+    public event Action? BatchCompleted;
+
     public InvoiceProcessorService(
         IConfigurationService configService, 
         IPdfGeneratorService pdfGeneratorService,
@@ -51,104 +57,186 @@ public class InvoiceProcessorService : IInvoiceProcessorService
 
         // Obtener todos los archivos XML en el directorio raíz (evitando carpetas internas)
         var xmlFiles = Directory.GetFiles(config.SourceFolderPath, "*.xml", SearchOption.TopDirectoryOnly);
-
+        
+        // Filtrar archivos que ya tienen su archivo PDF generado en la salida (evitar reprocesamientos innecesarios)
+        var filteredFiles = new List<string>();
         foreach (var filePath in xmlFiles)
         {
             var fileName = Path.GetFileName(filePath);
             var pdfFileName = Path.ChangeExtension(fileName, ".pdf");
             var pdfOutputPath = Path.Combine(config.OutputFolderPath, pdfFileName);
-
-            // ESTRATEGIA B: Si el archivo PDF ya existe en la salida, lo omitimos para evitar re-procesamiento
-            if (File.Exists(pdfOutputPath))
+            if (!File.Exists(pdfOutputPath))
             {
-                continue;
+                filteredFiles.Add(filePath);
             }
+        }
+
+        if (filteredFiles.Count == 0) return;
+
+        // Disparar inicio del lote con el conteo de archivos a procesar
+        BatchStarted?.Invoke(filteredFiles.Count);
+
+        var tasks = new List<Task>();
+        // SemaphoreSlim controlado a 4 hilos paralelos para no sobrecargar el renderizado WebView2
+        using var semaphore = new System.Threading.SemaphoreSlim(4, 4);
+
+        foreach (var filePath in filteredFiles)
+        {
+            tasks.Add(Task.Run(async () =>
+            {
+                await semaphore.WaitAsync();
+                try
+                {
+                    await ProcessSingleInvoiceWithRetryAsync(filePath, processedDir, errorDir, config);
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            }));
+        }
+
+        await Task.WhenAll(tasks);
+        
+        // Disparar conclusión del lote
+        BatchCompleted?.Invoke();
+    }
+
+    /// <summary>
+    /// Procesa un único comprobante de manera aislada y robusta.
+    /// </summary>
+    private async Task ProcessSingleInvoiceWithRetryAsync(string filePath, string processedDir, string errorDir, AppConfig config)
+    {
+        var fileName = Path.GetFileName(filePath);
+        var pdfFileName = Path.ChangeExtension(fileName, ".pdf");
+        var pdfOutputPath = Path.Combine(config.OutputFolderPath, pdfFileName);
+
+        long fileSize = 0;
+        try
+        {
+            // Intentar leer el XML con reintentos para evitar colisiones de bloqueo
+            string xmlContent = await ReadAllTextWithRetryAsync(filePath);
 
             try
             {
-                var xmlContent = await File.ReadAllTextAsync(filePath);
-
-                // Obtener tamaño antes de mover
-                long fileSize = 0;
-                try
+                if (File.Exists(filePath))
                 {
                     fileSize = new FileInfo(filePath).Length;
                 }
-                catch { }
-
-                // Generar PDF usando el motor WebView2
-                await _pdfGeneratorService.GeneratePdfAsync(xmlContent, config.CustomXsltPath, pdfOutputPath);
-
-                // ÉXITO: MOVER el XML original a la carpeta de Procesados
-                var destPath = Path.Combine(processedDir, fileName);
-                if (File.Exists(destPath))
-                {
-                    File.Delete(destPath);
-                }
-                File.Move(filePath, destPath);
-
-                // Registrar en el historial de forma persistente
-                await _historyService.AddEntryAsync(new ProcessedInvoiceEntry(
-                    FileName: fileName,
-                    SourcePath: filePath,
-                    PdfPath: pdfOutputPath,
-                    ProcessedAt: DateTime.Now,
-                    Status: "Success",
-                    ErrorMessage: null,
-                    FileSize: fileSize
-                ));
-
-                // Disparar evento de éxito para la interfaz
-                InvoiceProcessed?.Invoke(fileName, string.Empty, true);
             }
-            catch (Exception ex)
-            {
-                // Obtener tamaño antes de mover
-                long fileSize = 0;
-                try
-                {
-                    if (File.Exists(filePath))
-                    {
-                        fileSize = new FileInfo(filePath).Length;
-                    }
-                }
-                catch { }
+            catch { }
 
-                // FALLO: Mover el XML original a la carpeta de Errores
-                var destPath = Path.Combine(errorDir, fileName);
+            // Generar PDF usando el motor WebView2
+            await _pdfGeneratorService.GeneratePdfAsync(xmlContent, config.CustomXsltPath, pdfOutputPath);
+
+            // Mover el XML original a la carpeta de Procesados de forma segura (sincronizada localmente)
+            var destPath = Path.Combine(processedDir, fileName);
+            lock (this)
+            {
                 if (File.Exists(destPath))
                 {
                     File.Delete(destPath);
                 }
-                File.Move(filePath, destPath);
+                if (File.Exists(filePath))
+                {
+                    File.Move(filePath, destPath);
+                }
+            }
 
-                // Crear Log Detallado del Error en Formato JSON
-                var errorLog = new ErrorLog(
-                    FileName: fileName,
-                    Timestamp: DateTime.Now,
-                    ErrorMessage: ex.Message,
-                    ExceptionType: ex.GetType().Name,
-                    XsltApplied: string.IsNullOrEmpty(config.CustomXsltPath) ? "default_cfdi.xslt" : Path.GetFileName(config.CustomXsltPath)
-                );
+            // Registrar en el historial persistente
+            await _historyService.AddEntryAsync(new ProcessedInvoiceEntry(
+                FileName: fileName,
+                SourcePath: filePath,
+                PdfPath: pdfOutputPath,
+                ProcessedAt: DateTime.Now,
+                Status: "Success",
+                ErrorMessage: null,
+                FileSize: fileSize
+            ));
 
-                var jsonPath = Path.Combine(errorDir, fileName + ".error.json");
-                var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
-                var jsonContent = JsonSerializer.Serialize(errorLog, jsonOptions);
+            // Disparar evento de éxito para la interfaz
+            InvoiceProcessed?.Invoke(fileName, string.Empty, true);
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    fileSize = new FileInfo(filePath).Length;
+                }
+            }
+            catch { }
+
+            // Mover el XML original a la carpeta de Errores
+            var destPath = Path.Combine(errorDir, fileName);
+            lock (this)
+            {
+                if (File.Exists(destPath))
+                {
+                    File.Delete(destPath);
+                }
+                if (File.Exists(filePath))
+                {
+                    File.Move(filePath, destPath);
+                }
+            }
+
+            // Crear Log Detallado del Error en Formato JSON
+            var errorLog = new ErrorLog(
+                FileName: fileName,
+                Timestamp: DateTime.Now,
+                ErrorMessage: ex.Message,
+                ExceptionType: ex.GetType().Name,
+                XsltApplied: string.IsNullOrEmpty(config.CustomXsltPath) ? "default_cfdi.xslt" : Path.GetFileName(config.CustomXsltPath)
+            );
+
+            var jsonPath = Path.Combine(errorDir, fileName + ".error.json");
+            var jsonOptions = new JsonSerializerOptions { WriteIndented = true };
+            var jsonContent = JsonSerializer.Serialize(errorLog, jsonOptions);
+            try
+            {
                 await File.WriteAllTextAsync(jsonPath, jsonContent);
+            }
+            catch { }
 
-                // Registrar el error en el historial de forma persistente
-                await _historyService.AddEntryAsync(new ProcessedInvoiceEntry(
-                    FileName: fileName,
-                    SourcePath: filePath,
-                    PdfPath: pdfOutputPath,
-                    ProcessedAt: DateTime.Now,
-                    Status: "Error",
-                    ErrorMessage: ex.Message,
-                    FileSize: fileSize
-                ));
+            // Registrar el error en el historial
+            await _historyService.AddEntryAsync(new ProcessedInvoiceEntry(
+                FileName: fileName,
+                SourcePath: filePath,
+                PdfPath: pdfOutputPath,
+                ProcessedAt: DateTime.Now,
+                Status: "Error",
+                ErrorMessage: ex.Message,
+                FileSize: fileSize
+            ));
 
-                // Disparar evento de error para actualizar la UI en tiempo real
-                InvoiceProcessed?.Invoke(fileName, ex.Message, false);
+            // Disparar evento de error para actualizar la UI en tiempo real
+            InvoiceProcessed?.Invoke(fileName, ex.Message, false);
+        }
+    }
+
+    /// <summary>
+    /// Intenta leer un archivo de texto con reintentos utilizando retraso exponencial si el archivo está bloqueado.
+    /// </summary>
+    private async Task<string> ReadAllTextWithRetryAsync(string filePath, int maxRetries = 5, int initialDelayMs = 100)
+    {
+        int retries = 0;
+        while (true)
+        {
+            try
+            {
+                // Intentamos abrir el archivo con acceso exclusivo de lectura para verificar que se terminó de escribir
+                using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var reader = new StreamReader(fs);
+                return await reader.ReadToEndAsync();
+            }
+            catch (IOException) when (retries < maxRetries)
+            {
+                retries++;
+                // Retraso exponencial: 100ms, 200ms, 400ms, 800ms, 1600ms
+                int delay = initialDelayMs * (int)Math.Pow(2, retries - 1);
+                await Task.Delay(delay);
             }
         }
     }

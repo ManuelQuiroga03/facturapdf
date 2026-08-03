@@ -82,6 +82,22 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _isTestConsoleSuccess = false;
 
+    [ObservableProperty]
+    private bool _isBatchActive = false;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BatchProgressText))]
+    private int _batchTotalCount = 0;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BatchProgressText))]
+    private int _batchProcessedCount = 0;
+
+    [ObservableProperty]
+    private double _batchProgress = 0.0;
+
+    public string BatchProgressText => $"{BatchProcessedCount} de {BatchTotalCount} procesados";
+
     public ObservableCollection<ProcessedInvoice> ProcessingHistory { get; } = new();
     public ObservableCollection<ErrorLog> RecentErrors { get; } = new();
 
@@ -100,6 +116,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         // Suscribirse a eventos de observabilidad y estado
         _invoiceProcessorService.InvoiceProcessed += OnInvoiceProcessed;
+        _invoiceProcessorService.BatchStarted += OnBatchStarted;
+        _invoiceProcessorService.BatchCompleted += OnBatchCompleted;
         _invoiceMonitorService.MonitoringStateChanged += OnMonitoringStateChanged;
     }
 
@@ -311,8 +329,44 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(async () =>
         {
+            if (IsBatchActive)
+            {
+                BatchProcessedCount++;
+                if (BatchTotalCount > 0)
+                {
+                    BatchProgress = (double)BatchProcessedCount / BatchTotalCount;
+                }
+            }
             await RefreshDirectoryStatsAsync();
             await LoadErrorsAsync();
+        });
+    }
+
+    private void OnBatchStarted(int totalCount)
+    {
+        Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
+        {
+            BatchTotalCount = totalCount;
+            BatchProcessedCount = 0;
+            BatchProgress = 0.0;
+            IsBatchActive = true;
+            StatusMessage = $"Procesando lote de {totalCount} facturas...";
+        });
+    }
+
+    private void OnBatchCompleted()
+    {
+        Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            IsBatchActive = false;
+            BatchProgress = 1.0;
+            StatusMessage = "Procesamiento de lote finalizado.";
+            // Pequeña pausa de visualización y reset del progreso
+            await Task.Delay(2000);
+            if (!IsBatchActive)
+            {
+                BatchProgress = 0.0;
+            }
         });
     }
 
@@ -753,6 +807,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
         _invoiceProcessorService.InvoiceProcessed -= OnInvoiceProcessed;
+        _invoiceProcessorService.BatchStarted -= OnBatchStarted;
+        _invoiceProcessorService.BatchCompleted -= OnBatchCompleted;
         _invoiceMonitorService.MonitoringStateChanged -= OnMonitoringStateChanged;
     }
 }
