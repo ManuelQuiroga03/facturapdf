@@ -42,6 +42,15 @@ public partial class WizardViewModel : ObservableObject
     private bool _organizeOutputByFolder = false;
 
     [ObservableProperty]
+    private bool _useCustomColors = false;
+
+    [ObservableProperty]
+    private string _primaryColor = "#52B788";
+
+    [ObservableProperty]
+    private string _secondaryColor = "#8B949E";
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsTemplateModePredeterminada))]
     [NotifyPropertyChangedFor(nameof(IsTemplateModeGlobal))]
     [NotifyPropertyChangedFor(nameof(IsTemplateModeSpecific))]
@@ -382,6 +391,34 @@ public partial class WizardViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void SetColorPreset(string presetName)
+    {
+        switch (presetName.ToLower())
+        {
+            case "emerald":
+                PrimaryColor = "#52B788";
+                SecondaryColor = "#2D6A4F";
+                break;
+            case "blue":
+                PrimaryColor = "#2563EB";
+                SecondaryColor = "#1E3A8A";
+                break;
+            case "crimson":
+                PrimaryColor = "#DC2626";
+                SecondaryColor = "#7F1D1D";
+                break;
+            case "orange":
+                PrimaryColor = "#F97316";
+                SecondaryColor = "#7C2D12";
+                break;
+            case "charcoal":
+                PrimaryColor = "#4B5563";
+                SecondaryColor = "#1F2937";
+                break;
+        }
+    }
+
+    [RelayCommand]
     private async Task FinishConfigurationAsync()
     {
         if (!CanFinish) return;
@@ -408,7 +445,10 @@ public partial class WizardViewModel : ObservableObject
                 finalXsltPago,
                 finalXsltNomina,
                 finalXsltComercioExterior,
-                OrganizeOutputByFolder
+                OrganizeOutputByFolder,
+                UseCustomColors,
+                string.IsNullOrWhiteSpace(PrimaryColor) ? "#52B788" : PrimaryColor,
+                string.IsNullOrWhiteSpace(SecondaryColor) ? "#8B949E" : SecondaryColor
             );
 
             // Guardamos la configuración y encriptamos la contraseña de forma segura

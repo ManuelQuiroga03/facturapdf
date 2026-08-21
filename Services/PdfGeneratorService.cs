@@ -150,6 +150,12 @@ public class PdfGeneratorService : IPdfGeneratorService
             var argsList = new XsltArgumentList();
             argsList.AddParam("logoBase64", "", logoBase64);
 
+            if (config != null && config.UseCustomColors)
+            {
+                argsList.AddParam("primaryColor", "", config.PrimaryColorHex);
+                argsList.AddParam("secondaryColor", "", config.SecondaryColorHex);
+            }
+
             using var htmlWriter = new StringWriter();
             transform.Transform(xmlReader, argsList, htmlWriter);
 

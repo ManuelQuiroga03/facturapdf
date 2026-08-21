@@ -18,5 +18,8 @@ public record AppConfig(
     string XsltPagoPath,
     string XsltNominaPath,
     string XsltComercioExteriorPath,
-    bool OrganizeOutputByFolder
+    bool OrganizeOutputByFolder,
+    bool UseCustomColors,
+    string PrimaryColorHex,
+    string SecondaryColorHex
 );

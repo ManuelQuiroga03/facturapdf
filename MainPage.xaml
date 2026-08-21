@@ -881,8 +881,10 @@
                 <!-- Row 1: Layout Responsivo de 2 Columnas -->
                 <Grid Grid.Row="1" ColumnDefinitions="*, 380" ColumnSpacing="20">
                     
-                    <!-- Columna Izquierda: Formulario de Configuración -->
-                    <ScrollView Grid.Column="0">
+                    <!-- Columna Izquierda: Contenedor Dual Formulario/Editor -->
+                    <Grid Grid.Column="0">
+                        <!-- ScrollView Formulario (Oculto si el editor está activo) -->
+                        <ScrollView IsVisible="{Binding IsXsltEditorVisible, Converter={StaticResource InvertedBoolConverter}}">
                         <Border Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="20" VerticalOptions="Start">
                             <VerticalStackLayout Spacing="20">
                                 <Label Text="Usa esta herramienta para validar y depurar tus transformaciones XSLT de forma aislada. Selecciona un XML de prueba, un XSLT específico (opcional) y la ubicación para guardar el PDF." TextColor="{DynamicResource SecondaryText}" FontSize="12" LineBreakMode="WordWrap"/>
@@ -906,15 +908,21 @@
                                 <!-- XSLT de Prueba -->
                                 <VerticalStackLayout Spacing="6">
                                     <Label Text="Plantilla XSLT de Prueba (Opcional)" TextColor="{DynamicResource PrimaryText}" FontSize="13" FontAttributes="Bold"/>
-                                    <Grid ColumnDefinitions="*, Auto" ColumnSpacing="10">
+                                    <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="10">
                                         <Border Grid.Column="0" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource PanelBg}" StrokeShape="RoundRectangle 8" Padding="12, 0" HeightRequest="38">
                                             <Label Text="{Binding TestXsltPath, TargetNullValue='Enrutamiento Automático (Usa la configuración del sistema / default)'}" TextColor="{DynamicResource SecondaryText}" VerticalOptions="Center" FontSize="12" LineBreakMode="HeadTruncation"/>
                                         </Border>
-                                        <Border Grid.Column="1" Style="{StaticResource BrowseButtonStyle}" WidthRequest="110" HeightRequest="38">
+                                        <Border Grid.Column="1" Style="{StaticResource BrowseButtonStyle}" WidthRequest="100" HeightRequest="38">
                                             <Border.GestureRecognizers>
                                                 <TapGestureRecognizer Command="{Binding SelectTestXsltCommand}"/>
                                             </Border.GestureRecognizers>
                                             <Label Text="Examinar..." TextColor="{DynamicResource PrimaryText}" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Border>
+                                        <Border Grid.Column="2" Style="{StaticResource BrowseButtonStyle}" WidthRequest="90" HeightRequest="38" BackgroundColor="#22272E">
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding OpenXsltInEditorCommand}"/>
+                                            </Border.GestureRecognizers>
+                                            <Label Text="✏️ Editar" TextColor="White" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
                                         </Border>
                                     </Grid>
                                     <Label Text="* Si dejas esta plantilla en blanco, la app detectará automáticamente el tipo de comprobante." TextColor="{DynamicResource MutedText}" FontSize="10" FontAttributes="Italic"/>
@@ -998,6 +1006,47 @@
                             </VerticalStackLayout>
                         </Border>
                     </ScrollView>
+
+                    <!-- Panel del Editor XSLT (Visible si IsXsltEditorVisible es true) -->
+                    <Border IsVisible="{Binding IsXsltEditorVisible}" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="{DynamicResource CardBg}" StrokeShape="RoundRectangle 12" Padding="20">
+                        <Grid RowDefinitions="Auto, *, Auto" RowSpacing="15">
+                            <!-- Cabecera del Editor -->
+                            <Grid Grid.Row="0" ColumnDefinitions="*, Auto" VerticalOptions="Center">
+                                <VerticalStackLayout Grid.Column="0">
+                                    <Label Text="Editor de Plantilla XSLT" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource PrimaryText}"/>
+                                    <Label Text="{Binding TestXsltPath, FallbackValue='Editando plantilla...'}" FontSize="11" TextColor="{DynamicResource SecondaryText}" LineBreakMode="HeadTruncation"/>
+                                </VerticalStackLayout>
+                                <Button Grid.Column="1" Text="Cerrar" Command="{Binding CloseXsltEditorCommand}" HeightRequest="30" Padding="12,0" BackgroundColor="#21262D" TextColor="White" CornerRadius="6" FontSize="11"/>
+                            </Grid>
+
+                            <!-- Área del Editor de Código -->
+                            <Border Grid.Row="1" Stroke="{DynamicResource BorderColor}" StrokeThickness="1" BackgroundColor="#0D1117" StrokeShape="RoundRectangle 8">
+                                <Editor Text="{Binding XsltEditorCode}" 
+                                        FontFamily="Consolas" 
+                                        FontSize="12" 
+                                        TextColor="White" 
+                                        Placeholder="Escribe el código XSLT aquí..."
+                                        AutoSize="Disabled"
+                                        VerticalOptions="FillAndExpand"
+                                        HorizontalOptions="FillAndExpand"
+                                        Margin="5"
+                                        BackgroundColor="Transparent"
+                                        IsSpellCheckEnabled="False"
+                                        IsTextPredictionEnabled="False"/>
+                            </Border>
+
+                            <!-- Botón de Guardado -->
+                            <Button Grid.Row="2" 
+                                    Text="💾 GUARDAR Y REGENERAR PDF" 
+                                    Command="{Binding SaveXsltCodeCommand}" 
+                                    BackgroundColor="#10B981" 
+                                    TextColor="White" 
+                                    FontAttributes="Bold" 
+                                    HeightRequest="42" 
+                                    CornerRadius="8"/>
+                        </Grid>
+                    </Border>
+                </Grid>
 
                     <!-- Columna Derecha: Consola de Diagnóstico & Resultados -->
                     <Grid Grid.Column="1" RowDefinitions="Auto, *" RowSpacing="15">

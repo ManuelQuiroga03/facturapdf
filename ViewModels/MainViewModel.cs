@@ -84,6 +84,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private bool _isTestConsoleSuccess = false;
 
     [ObservableProperty]
+    private string _xsltEditorCode = string.Empty;
+
+    [ObservableProperty]
+    private bool _isXsltEditorVisible = false;
+
+    [ObservableProperty]
     private bool _isCustomPopupVisible = false;
 
     [ObservableProperty]
@@ -749,6 +755,58 @@ public partial class MainViewModel : ObservableObject, IDisposable
                                 $"Detalle Técnico: {ex.StackTrace}";
             IsTestConsoleSuccess = false;
         }
+    }
+
+    [RelayCommand]
+    private async Task OpenXsltInEditorAsync()
+    {
+        if (string.IsNullOrWhiteSpace(TestXsltPath) || !File.Exists(TestXsltPath))
+        {
+            await ShowAlertAsync("Selecciona Plantilla", "Por favor, selecciona primero un archivo XSLT físico en el laboratorio para poder editarlo.");
+            return;
+        }
+
+        try
+        {
+            XsltEditorCode = await File.ReadAllTextAsync(TestXsltPath);
+            IsXsltEditorVisible = true;
+        }
+        catch (Exception ex)
+        {
+            await ShowAlertAsync("Error de Lectura", $"No se pudo leer el archivo XSLT: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private async Task SaveXsltCodeAsync()
+    {
+        if (string.IsNullOrWhiteSpace(TestXsltPath) || !File.Exists(TestXsltPath))
+        {
+            await ShowAlertAsync("Error de Archivo", "No hay ningún archivo XSLT activo para guardar.");
+            return;
+        }
+
+        try
+        {
+            await File.WriteAllTextAsync(TestXsltPath, XsltEditorCode);
+            await ShowAlertAsync("Guardado con Éxito", "La plantilla XSLT ha sido actualizada. Se procederá a regenerar la previsualización del PDF de prueba.");
+            
+            // Recargar de inmediato la previsualización
+            if (!string.IsNullOrWhiteSpace(TestXmlPath) && !string.IsNullOrWhiteSpace(TestOutputPath))
+            {
+                await GenerateTestPdfAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowAlertAsync("Error de Escritura", $"No se pudo escribir el archivo XSLT: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private void CloseXsltEditor()
+    {
+        IsXsltEditorVisible = false;
     }
 
     [RelayCommand]

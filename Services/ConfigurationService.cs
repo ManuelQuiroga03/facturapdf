@@ -26,6 +26,9 @@ public class ConfigurationService : IConfigurationService
     private const string KeyXsltNomina = "XsltNominaPath";
     private const string KeyXsltComercioExterior = "XsltComercioExteriorPath";
     private const string KeyOrganizeOutput = "OrganizeOutputByFolder";
+    private const string KeyUseCustomColors = "UseCustomColors";
+    private const string KeyPrimaryColor = "PrimaryColorHex";
+    private const string KeySecondaryColor = "SecondaryColorHex";
 
     /// <inheritdoc />
     public Task<AppConfig?> LoadConfigAsync()
@@ -45,6 +48,9 @@ public class ConfigurationService : IConfigurationService
             var xsltNomina = Preferences.Default.Get<string?>(KeyXsltNomina, null) ?? string.Empty;
             var xsltComercioExterior = Preferences.Default.Get<string?>(KeyXsltComercioExterior, null) ?? string.Empty;
             var organizeOutput = Preferences.Default.Get<bool>(KeyOrganizeOutput, false);
+            var useCustomColors = Preferences.Default.Get<bool>(KeyUseCustomColors, false);
+            var primaryColor = Preferences.Default.Get<string?>(KeyPrimaryColor, "#52B788") ?? "#52B788";
+            var secondaryColor = Preferences.Default.Get<string?>(KeySecondaryColor, "#8B949E") ?? "#8B949E";
 
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(sourceFolder) || string.IsNullOrEmpty(outputFolder))
             {
@@ -64,7 +70,10 @@ public class ConfigurationService : IConfigurationService
                 xsltPago,
                 xsltNomina,
                 xsltComercioExterior,
-                organizeOutput
+                organizeOutput,
+                useCustomColors,
+                primaryColor,
+                secondaryColor
             ));
         }
         catch (Exception)
@@ -90,6 +99,9 @@ public class ConfigurationService : IConfigurationService
         Preferences.Default.Set(KeyXsltNomina, config.XsltNominaPath);
         Preferences.Default.Set(KeyXsltComercioExterior, config.XsltComercioExteriorPath);
         Preferences.Default.Set(KeyOrganizeOutput, config.OrganizeOutputByFolder);
+        Preferences.Default.Set(KeyUseCustomColors, config.UseCustomColors);
+        Preferences.Default.Set(KeyPrimaryColor, config.PrimaryColorHex);
+        Preferences.Default.Set(KeySecondaryColor, config.SecondaryColorHex);
 
         if (!string.IsNullOrEmpty(password))
         {
@@ -136,6 +148,9 @@ public class ConfigurationService : IConfigurationService
         Preferences.Default.Remove(KeyXsltNomina);
         Preferences.Default.Remove(KeyXsltComercioExterior);
         Preferences.Default.Remove(KeyOrganizeOutput);
+        Preferences.Default.Remove(KeyUseCustomColors);
+        Preferences.Default.Remove(KeyPrimaryColor);
+        Preferences.Default.Remove(KeySecondaryColor);
 
         SecureStorage.Default.Remove(KeySecurePassword);
         await Task.CompletedTask;

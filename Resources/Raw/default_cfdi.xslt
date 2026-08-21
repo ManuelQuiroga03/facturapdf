@@ -8,6 +8,8 @@
   <xsl:output method="html" encoding="utf-8" indent="yes"/>
 
   <xsl:param name="logoBase64" select="''"/>
+  <xsl:param name="primaryColor" select="'#52B788'"/>
+  <xsl:param name="secondaryColor" select="'#8B949E'"/>
 
   <xsl:template match="/">
     <html>
@@ -41,7 +43,7 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            border-bottom: 2px solid #52B788;
+            border-bottom: 2px solid <xsl:value-of select="$primaryColor"/>;
             padding-bottom: 20px;
             margin-bottom: 25px;
           }
@@ -49,7 +51,7 @@
           .brand-title {
             font-size: 24px;
             font-weight: 700;
-            color: #52B788;
+            color: <xsl:value-of select="$primaryColor"/>;
             margin: 0;
           }
 
@@ -93,8 +95,8 @@
           .party-box h3 {
             font-size: 13px;
             font-weight: 600;
-            color: #111827;
-            border-bottom: 1px solid #E5E7EB;
+            color: <xsl:value-of select="$secondaryColor"/>;
+            border-bottom: 1px solid <xsl:value-of select="$secondaryColor"/>;
             padding-bottom: 5px;
             margin: 0 0 10px 0;
             text-transform: uppercase;
@@ -120,13 +122,13 @@
 
           .concepts-table th {
             background-color: #F3F4F6;
-            color: #374151;
+            color: <xsl:value-of select="$secondaryColor"/>;
             font-weight: 600;
             text-align: left;
             padding: 10px;
             font-size: 11px;
             text-transform: uppercase;
-            border-bottom: 1px solid #E5E7EB;
+            border-bottom: 2px solid <xsl:value-of select="$secondaryColor"/>;
           }
 
           .concepts-table td {
@@ -155,7 +157,7 @@
           }
 
           .total-row.grand-total {
-            border-top: 2px solid #52B788;
+            border-top: 2px solid <xsl:value-of select="$primaryColor"/>;
             border-bottom: none;
             padding-top: 10px;
             font-size: 14px;
